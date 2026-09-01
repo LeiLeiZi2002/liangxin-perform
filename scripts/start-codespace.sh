@@ -23,6 +23,21 @@ command -v npm >/dev/null 2>&1 || {
   exit 1
 }
 
+CODESPACES_SHARED_ENV="${CODESPACES_SHARED_ENV:-/workspaces/.codespaces/shared/.env}"
+
+read_codespaces_value() {
+  local name="$1"
+  [[ -r "$CODESPACES_SHARED_ENV" ]] || return 1
+  sed -n "s/^${name}=//p" "$CODESPACES_SHARED_ENV" | tail -n 1 | tr -d '\r'
+}
+
+if [[ -z "${CODESPACE_NAME:-}" ]]; then
+  CODESPACE_NAME="$(read_codespaces_value CODESPACE_NAME || true)"
+fi
+if [[ -z "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]]; then
+  GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN="$(read_codespaces_value GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || true)"
+fi
+
 : "${CODESPACE_NAME:?CODESPACE_NAME is required in GitHub Codespaces}"
 : "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:?GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN is required in GitHub Codespaces}"
 CODESPACES_FRONTEND_HOST="${CODESPACE_NAME}-5173.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"

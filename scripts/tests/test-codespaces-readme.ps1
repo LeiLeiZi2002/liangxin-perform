@@ -35,6 +35,8 @@ if (Test-Path -LiteralPath $devcontainerPath -PathType Leaf) {
         Assert-Contract ([string]$devcontainer.postCreateCommand -match '--no-deps -e ./backend') 'Codespaces 必须以无额外解析方式安装本地后端包'
         Assert-Contract ([string]$devcontainer.postCreateCommand -match 'npm ci') 'Codespaces 必须通过 npm ci 安装前端依赖'
         Assert-Contract ([string]$devcontainer.postStartCommand -match 'start-codespace\.sh') 'Codespaces 启动钩子必须调用 start-codespace.sh'
+        Assert-Contract ([string]$devcontainer.postStartCommand -match '\bnohup\b') 'Codespaces 启动钩子必须让服务在生命周期命令结束后继续运行'
+        Assert-Contract ([string]$devcontainer.postStartCommand -notmatch '\bsetsid\b') 'Codespaces 启动钩子不得使用实测后无法保活服务的 setsid'
     }
     catch {
         Assert-Contract $false "devcontainer 配置无法解析：$($_.Exception.Message)"
@@ -47,6 +49,8 @@ if (Test-Path -LiteralPath $startScriptPath -PathType Leaf) {
     Assert-Contract ($startScript -match 'npm run dev.*--host 0\.0\.0\.0.*--port 5173.*--strictPort') 'Codespaces 前端必须固定监听 0.0.0.0:5173'
     Assert-Contract ($startScript -match 'VITE_API_BASE_URL=""') 'Codespaces 必须让前端通过同源代理访问后端'
     Assert-Contract ($startScript -match 'FRONTEND_ORIGIN="https://\$\{CODESPACES_FRONTEND_HOST\}"') 'Codespaces 必须把真实前端来源交给后端'
+    Assert-Contract ($startScript -match '/workspaces/\.codespaces/shared/\.env') 'Codespaces 启动脚本必须能读取平台共享环境文件'
+    Assert-Contract ($startScript -match 'read_codespaces_value.*CODESPACE_NAME' -and $startScript -match 'read_codespaces_value.*GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN') 'Codespaces 启动脚本必须只补取构造转发地址所需的两个变量'
 }
 
 if (Test-Path -LiteralPath $readmePath -PathType Leaf) {
