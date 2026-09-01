@@ -212,6 +212,48 @@ class ReduceModelOutput(ReportOutputModel):
         )
 
 
+def _canonicalize_reduced_unit_refs(
+    local_outputs: Sequence[LocalCodingOutput],
+    output: ReduceModelOutput,
+) -> ReduceModelOutput:
+    local_refs = [
+        ref
+        for local_output in local_outputs
+        for local_unit in local_output.units
+        for ref in local_unit.refs
+    ]
+
+    def same_source(left: EvidenceRef, right: EvidenceRef) -> bool:
+        if isinstance(left, DialogueRef) and isinstance(right, DialogueRef):
+            return left.turn_id == right.turn_id
+        if isinstance(left, WorkRecordRef) and isinstance(right, WorkRecordRef):
+            return left.field == right.field
+        if isinstance(left, AudioEventRef) and isinstance(right, AudioEventRef):
+            return left.event_id == right.event_id
+        return False
+
+    def quote(ref: EvidenceRef) -> str:
+        if isinstance(ref, (DialogueRef, WorkRecordRef)):
+            return " ".join(ref.quote.split())
+        return ""
+
+    def canonical(ref: EvidenceRef) -> EvidenceRef:
+        if any(ref == local_ref for local_ref in local_refs):
+            return ref
+        matches = [
+            local_ref
+            for local_ref in local_refs
+            if same_source(ref, local_ref) and quote(ref) == quote(local_ref)
+        ]
+        if matches and all(candidate == matches[0] for candidate in matches[1:]):
+            return matches[0]
+        return ref
+
+    for unit in output.units:
+        unit.refs = [canonical(ref) for ref in unit.refs]
+    return output
+
+
 def _require_reduced_unit_refs_in_local_outputs(
     local_outputs: Sequence[LocalCodingOutput],
     output: ReduceModelOutput,
@@ -790,6 +832,7 @@ class ReportProvider(_StructuredTextProvider):
             raise
         _validate_reduce_targets(result, targets)
         _validate_active_target_coverage(result, active_target_briefs)
+        result = _canonicalize_reduced_unit_refs(local_outputs, result)
         _require_reduced_unit_refs_in_local_outputs(local_outputs, result)
         self._repair_feedback.pop(repair_key, None)
         return result.to_global_output()

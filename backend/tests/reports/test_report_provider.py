@@ -12,7 +12,7 @@ from app.reports.job_inputs import (
     CodingTurnInput,
     SessionTerminationInput,
 )
-from app.reports.scoring_domain import CoreDimension, SpecialModule, Target
+from app.reports.scoring_domain import CoreDimension, DialogueRef, SpecialModule, Target
 from app.runtime.models import CacheMode, ModelCallKind, ModelRole, PromptFamily
 from app.runtime_config import RuntimeCredentialStore
 from app.sessions.models import (
@@ -739,6 +739,53 @@ async def test_reduce_rejects_non_exact_unit_ref_before_lossy_conversion_and_rep
     assert "ReducedMeaningUnit global-unit refs[0]" in repair_message
     assert "\"quote\":\"公开冻结\"" in repair_message
     assert result.units[0].turn_ids == ["turn-worker"]
+
+
+async def test_reduce_canonicalizes_unit_ref_with_whitespace_only_difference() -> None:
+    from app.reports.report_provider import LocalCodingOutput, ReportProvider
+
+    raw = json.loads(_global_json())
+    raw["units"] = [
+        {
+            "id": "global-unit",
+            "summary": "合并后的意义单元。",
+            "refs": [
+                {
+                    "kind": "dialogue",
+                    "turn_id": "turn-worker",
+                    "quote": "第一句。\n第二句。",
+                }
+            ],
+        }
+    ]
+    local_output = LocalCodingOutput.model_validate_json(
+        _local_json("shard-a", with_unit=True)
+    )
+    local_output.units[0].refs = [
+        DialogueRef(
+            kind="dialogue",
+            turn_id="turn-worker",
+            quote="第一句。\n\n第二句。",
+        )
+    ]
+    client = FakeClient([json.dumps(raw, ensure_ascii=False)])
+    provider = ReportProvider(_store(), client=client)
+
+    result = await provider.reduce_coding(
+        [
+            local_output,
+            LocalCodingOutput(shard_id="shard-b", units=[]),
+        ],
+        session_id="session-report",
+        model_config=_model_config(),
+        targets=ALL_TARGETS,
+        turn_speakers={"turn-worker": "worker"},
+        scene=Scene.hotline,
+        media=Media.voice,
+    )
+
+    assert result.units[0].turn_ids == ["turn-worker"]
+    assert len(client.chat.completions.calls) == 1
 
 
 async def test_reduce_requires_exactly_two_distinct_shard_outputs() -> None:
