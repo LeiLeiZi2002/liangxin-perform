@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.sessions.models import (
     EndReason,
@@ -37,6 +37,20 @@ def test_demo_config_defaults_to_one_untimed_task() -> None:
 
     assert config.task_count == 1
     assert config.soft_duration_minutes is None
+
+
+def test_every_published_hotline_case_has_a_valid_character_profile() -> None:
+    from app.cases.loader import CaseRepository
+    from app.runtime.character_provider import CharacterRepository
+    from app.sessions.models import Scene
+
+    cases = CaseRepository().list_published(scene=Scene.hotline)
+    characters = CharacterRepository()
+
+    assert cases
+    for package in cases:
+        profile = characters.get_for_case(package.case)
+        assert profile.case_id == package.case.case_id
 
 
 def test_create_session_uses_runtime_state_and_live_chain(
@@ -170,7 +184,7 @@ def test_required_character_missing_returns_configuration_error(
     assert response.json()["detail"] == "个案要求角色配置，但配置文件不存在"
 
 
-def test_legacy_case_without_character_keeps_workflow_fallback(
+def test_hotline_case_without_character_never_falls_back_to_workflow(
     client: TestClient,
     test_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
@@ -188,6 +202,38 @@ def test_legacy_case_without_character_keeps_workflow_fallback(
     )
 
     response = create_session(client, case_id="crisis_student_main")
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "该热线个案暂时无法开始，请联系管理员检查配置"
+    with Session(test_engine) as db:
+        records = list(db.exec(select(SessionRecord)).all())
+    assert records == []
+
+
+def test_non_hotline_legacy_case_without_character_keeps_workflow_fallback(
+    client: TestClient,
+    test_engine: Engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.api.routes import sessions as sessions_route
+    from app.runtime.character_provider import CharacterNotFoundError
+
+    def missing_character(case_spec):
+        raise CharacterNotFoundError(case_spec.case_id)
+
+    monkeypatch.setattr(
+        sessions_route.character_repository,
+        "get_for_case",
+        missing_character,
+    )
+
+    response = create_session(
+        client,
+        mode="experience",
+        scene="institution",
+        case_type="short",
+        case_id="boundary_referral_short",
+    )
 
     assert response.status_code == 201
     with Session(test_engine) as db:

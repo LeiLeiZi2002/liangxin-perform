@@ -16,6 +16,7 @@ from app.runtime.domain import initialize_actor_state
 from app.sessions.models import (
     SCENE_MEDIA,
     ModelMode,
+    Scene,
     SessionMode,
     SessionRecord,
     TurnRecord,
@@ -73,6 +74,11 @@ def create_session(request: SessionCreate, db: SessionDep) -> SessionRecord:
             raise HTTPException(
                 status_code=422,
                 detail="个案要求角色配置，但配置文件不存在",
+            ) from exc
+        if scene is Scene.hotline:
+            raise HTTPException(
+                status_code=422,
+                detail="该热线个案暂时无法开始，请联系管理员检查配置",
             ) from exc
         runtime_engine = WORKFLOW_ENGINE
         state_json: dict[str, object] = {

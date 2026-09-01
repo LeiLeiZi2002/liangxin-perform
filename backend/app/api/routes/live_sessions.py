@@ -50,7 +50,7 @@ from app.runtime.providers import (
 )
 from app.runtime.turn_boundary import BoundaryState, TurnBoundary
 from app.runtime_config import RuntimeCredentialStore, runtime_credential_store
-from app.sessions.models import EndReason, Media, SessionRecord
+from app.sessions.models import EndReason, Media, Scene, SessionRecord
 
 router = APIRouter(tags=["live-sessions"])
 BOUNDARY_POLL_SECONDS = 0.1
@@ -160,6 +160,12 @@ def select_live_kernel(
 ) -> LiveKernel:
     with Session(database.engine) as db:
         record = db.get(SessionRecord, session_id)
+    if (
+        record is not None
+        and record.scene is Scene.hotline
+        and runtime_engine_from_state(record.state_json) != CHARACTER_PROMPT_ENGINE
+    ):
+        raise KernelSessionConflictError("本次会谈使用的是旧配置，请返回并重新开始")
     if (
         record is not None
         and runtime_engine_from_state(record.state_json) == CHARACTER_PROMPT_ENGINE
@@ -1652,11 +1658,16 @@ async def live_session(
     speech_provider: SpeechProviderDep,
 ) -> None:
     await websocket.accept()
-    kernel = select_live_kernel(
-        session_id,
-        workflow_kernel=workflow_kernel,
-        character_kernel=character_kernel,
-    )
+    try:
+        kernel = select_live_kernel(
+            session_id,
+            workflow_kernel=workflow_kernel,
+            character_kernel=character_kernel,
+        )
+    except KernelSessionConflictError as exc:
+        await websocket.send_json({"type": "session.error", "message": str(exc)})
+        await websocket.close(code=4409)
+        return
     simulation_mode = websocket.headers.get("x-assessment-simulation", "")
     content_simulation = simulation_mode == CONTENT_SIMULATION_HEADER
     diagnostic_simulation = simulation_mode in DIAGNOSTIC_SIMULATION_HEADERS

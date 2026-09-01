@@ -15,6 +15,7 @@ from app.main import app
 from app.runtime.failures import FailureDisposition, RuntimeFailure
 from app.runtime.kernel import (
     KernelOpeningResult,
+    KernelSessionConflictError,
     KernelTurnConflictError,
     KernelTurnResult,
     LiveSnapshot,
@@ -77,7 +78,7 @@ def test_live_kernel_factories_share_process_instances(
                 clear()
 
 
-def test_live_kernel_selection_uses_persisted_engine_and_legacy_default(
+def test_live_kernel_selection_rejects_legacy_hotline_without_using_director(
     test_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -123,6 +124,16 @@ def test_live_kernel_selection_uses_persisted_engine_and_legacy_default(
                     model_mode=ModelMode.live,
                     state_json={"runtime": {"phase": "listening"}},
                 ),
+                SessionRecord(
+                    id="legacy-online-session",
+                    mode=SessionMode.experience,
+                    scene=Scene.online,
+                    case_type=CaseType.main,
+                    case_id="marriage_boundary_main",
+                    media=Media.text,
+                    model_mode=ModelMode.live,
+                    state_json={"runtime": {"phase": "listening"}},
+                ),
             ]
         )
         db.commit()
@@ -137,9 +148,15 @@ def test_live_kernel_selection_uses_persisted_engine_and_legacy_default(
         )
         is character
     )
-    assert (
+    with pytest.raises(KernelSessionConflictError, match="旧配置"):
         select_live_kernel(
             "legacy-workflow-session",
+            workflow_kernel=workflow,
+            character_kernel=character,
+        )
+    assert (
+        select_live_kernel(
+            "legacy-online-session",
             workflow_kernel=workflow,
             character_kernel=character,
         )
@@ -851,6 +868,50 @@ def receive_until(websocket: object, expected_type: str, limit: int = 10) -> dic
         if message["type"] == expected_type:
             return message
     raise AssertionError(f"未收到 {expected_type}")
+
+
+def test_legacy_hotline_websocket_never_reaches_workflow_kernel(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    from sqlmodel import Session, SQLModel
+
+    from app.sessions.models import (
+        CaseType,
+        ModelMode,
+        Scene,
+        SessionMode,
+        SessionRecord,
+    )
+
+    SQLModel.metadata.create_all(test_engine)
+    with Session(test_engine) as db:
+        db.add(
+            SessionRecord(
+                id="legacy-hotline-websocket",
+                mode=SessionMode.assessment,
+                scene=Scene.hotline,
+                case_type=CaseType.main,
+                case_id="crisis_student_main",
+                media=Media.voice,
+                model_mode=ModelMode.live,
+                state_json={"runtime": {"phase": "listening"}},
+            )
+        )
+        db.commit()
+
+    workflow = FakeKernel(media=Media.voice, has_transcript=False)
+    override_live_dependencies(workflow)
+
+    with client.websocket_connect("/api/live-sessions/legacy-hotline-websocket") as websocket:
+        message = websocket.receive_json()
+
+    assert message == {
+        "type": "session.error",
+        "message": "本次会谈使用的是旧配置，请返回并重新开始",
+    }
+    assert workflow.opening_calls == 0
+    assert workflow.turn_calls == []
 
 
 def test_reconnect_sends_complete_persisted_snapshot(client: TestClient) -> None:
