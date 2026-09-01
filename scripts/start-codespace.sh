@@ -66,6 +66,21 @@ project_pid() {
   printf '%s\n' "$pid"
 }
 
+wait_for_project_pid() {
+  local pid_file="$1"
+  local expected_cwd="$2"
+  local expected_command="$3"
+  local deadline=$((SECONDS + 10))
+
+  while (( SECONDS < deadline )); do
+    if project_pid "$pid_file" "$expected_cwd" "$expected_command" >/dev/null; then
+      return 0
+    fi
+    sleep 0.1
+  done
+  return 1
+}
+
 BACKEND_PID=""
 FRONTEND_PID=""
 if BACKEND_PID="$(project_pid "$BACKEND_PID_FILE" "$ROOT/backend" 'app.main:app')"; then
@@ -118,6 +133,15 @@ cleanup() {
   rm -f "$BACKEND_PID_FILE" "$FRONTEND_PID_FILE"
 }
 trap cleanup EXIT INT TERM
+
+if ! wait_for_project_pid "$BACKEND_PID_FILE" "$ROOT/backend" 'app.main:app'; then
+  echo "Backend process did not become ready." >&2
+  exit 1
+fi
+if ! wait_for_project_pid "$FRONTEND_PID_FILE" "$ROOT/frontend" 'npm run dev'; then
+  echo "Frontend process did not become ready." >&2
+  exit 1
+fi
 
 echo "Codespaces services starting on https://${CODESPACES_FRONTEND_HOST}."
 echo "Logs: $RUNTIME/backend.log and $RUNTIME/frontend.log"

@@ -52,6 +52,7 @@ if (Test-Path -LiteralPath $startScriptPath -PathType Leaf) {
     Assert-Contract ($startScript -match 'FRONTEND_ORIGIN="https://\$\{CODESPACES_FRONTEND_HOST\}"') 'Codespaces 必须把真实前端来源交给后端'
     Assert-Contract ($startScript -match '/workspaces/\.codespaces/shared/\.env') 'Codespaces 启动脚本必须能读取平台共享环境文件'
     Assert-Contract ($startScript -match 'read_codespaces_value.*CODESPACE_NAME' -and $startScript -match 'read_codespaces_value.*GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN') 'Codespaces 启动脚本必须只补取构造转发地址所需的两个变量'
+    Assert-Contract ($startScript -match 'wait_for_project_pid') 'Codespaces 启动脚本必须等待后台进程完成 exec，不能在写入 PID 后立即判定退出'
 }
 
 if (Test-Path -LiteralPath $readmePath -PathType Leaf) {
