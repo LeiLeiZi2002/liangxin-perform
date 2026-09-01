@@ -212,6 +212,22 @@ class ReduceModelOutput(ReportOutputModel):
         )
 
 
+def _same_source_ref(left: EvidenceRef, right: EvidenceRef) -> bool:
+    if isinstance(left, DialogueRef) and isinstance(right, DialogueRef):
+        return left.turn_id == right.turn_id
+    if isinstance(left, WorkRecordRef) and isinstance(right, WorkRecordRef):
+        return left.field == right.field
+    if isinstance(left, AudioEventRef) and isinstance(right, AudioEventRef):
+        return left.event_id == right.event_id
+    return False
+
+
+def _normalized_ref_quote(ref: EvidenceRef) -> str:
+    if isinstance(ref, (DialogueRef, WorkRecordRef)):
+        return " ".join(ref.quote.split())
+    return ""
+
+
 def _canonicalize_reduced_unit_refs(
     local_outputs: Sequence[LocalCodingOutput],
     output: ReduceModelOutput,
@@ -223,27 +239,14 @@ def _canonicalize_reduced_unit_refs(
         for ref in local_unit.refs
     ]
 
-    def same_source(left: EvidenceRef, right: EvidenceRef) -> bool:
-        if isinstance(left, DialogueRef) and isinstance(right, DialogueRef):
-            return left.turn_id == right.turn_id
-        if isinstance(left, WorkRecordRef) and isinstance(right, WorkRecordRef):
-            return left.field == right.field
-        if isinstance(left, AudioEventRef) and isinstance(right, AudioEventRef):
-            return left.event_id == right.event_id
-        return False
-
-    def quote(ref: EvidenceRef) -> str:
-        if isinstance(ref, (DialogueRef, WorkRecordRef)):
-            return " ".join(ref.quote.split())
-        return ""
-
     def canonical(ref: EvidenceRef) -> EvidenceRef:
         if any(ref == local_ref for local_ref in local_refs):
             return ref
         matches = [
             local_ref
             for local_ref in local_refs
-            if same_source(ref, local_ref) and quote(ref) == quote(local_ref)
+            if _same_source_ref(ref, local_ref)
+            and _normalized_ref_quote(ref) == _normalized_ref_quote(local_ref)
         ]
         if matches and all(candidate == matches[0] for candidate in matches[1:]):
             return matches[0]
@@ -251,6 +254,35 @@ def _canonicalize_reduced_unit_refs(
 
     for unit in output.units:
         unit.refs = [canonical(ref) for ref in unit.refs]
+    return output
+
+
+def _canonicalize_reduced_evidence_refs(output: ReduceModelOutput) -> ReduceModelOutput:
+    """让模型负责选材料，程序负责恢复冻结材料中的原始引文。"""
+
+    units_by_id = {unit.id: unit for unit in output.units}
+
+    def canonical(evidence: CodedEvidence) -> CodedEvidence:
+        unit = units_by_id.get(evidence.unit_id)
+        if unit is None:
+            return evidence
+        candidates = [
+            ref for ref in unit.refs if _same_source_ref(evidence.ref, ref)
+        ]
+        if len(candidates) != 1:
+            return evidence
+        frozen_ref = candidates[0]
+        if isinstance(evidence.ref, (DialogueRef, WorkRecordRef)) and isinstance(
+            frozen_ref, (DialogueRef, WorkRecordRef)
+        ):
+            if evidence.ref.quote in frozen_ref.quote:
+                return evidence
+            return evidence.model_copy(update={"ref": frozen_ref})
+        return evidence
+
+    output.coded_evidence = [canonical(item) for item in output.coded_evidence]
+    for check in output.counter_checks:
+        check.found = [canonical(item) for item in check.found]
     return output
 
 
@@ -834,6 +866,7 @@ class ReportProvider(_StructuredTextProvider):
         _validate_active_target_coverage(result, active_target_briefs)
         result = _canonicalize_reduced_unit_refs(local_outputs, result)
         _require_reduced_unit_refs_in_local_outputs(local_outputs, result)
+        result = _canonicalize_reduced_evidence_refs(result)
         self._repair_feedback.pop(repair_key, None)
         return result.to_global_output()
 

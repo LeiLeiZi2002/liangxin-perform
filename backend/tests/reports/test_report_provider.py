@@ -788,6 +788,70 @@ async def test_reduce_canonicalizes_unit_ref_with_whitespace_only_difference() -
     assert len(client.chat.completions.calls) == 1
 
 
+async def test_reduce_uses_frozen_unit_ref_when_evidence_quote_is_not_contiguous() -> None:
+    from app.reports.report_provider import LocalCodingOutput, ReportProvider
+
+    raw = json.loads(_global_json())
+    frozen_ref = {
+        "kind": "dialogue",
+        "turn_id": "turn-worker",
+        "quote": "先确认你现在是否安全，再一起商量今晚怎么安排。",
+    }
+    raw["units"] = [
+        {
+            "id": "global-unit",
+            "summary": "受测者先确认安全，再共同拟定安排。",
+            "refs": [frozen_ref],
+        }
+    ]
+    raw["coded_evidence"] = [
+        {
+            "unit_id": "global-unit",
+            "target": "C1",
+            "indicator_id": "C1.respect",
+            "direction": "support",
+            "strength": "moderate",
+            "context": "先询问安全，再共同商量。",
+            "alternative_reading": None,
+            "ref": {
+                "kind": "dialogue",
+                "turn_id": "turn-worker",
+                "quote": "先确认安全……再商量安排",
+            },
+        }
+    ]
+    local_output = LocalCodingOutput.model_validate(
+        {
+            "shard_id": "shard-a",
+            "units": [
+                {
+                    "id": "local-unit",
+                    "summary": "保留冻结原文。",
+                    "initial_codes": ["安全确认"],
+                    "refs": [frozen_ref],
+                    "source_role": "worker",
+                    "alternative_reading": None,
+                }
+            ],
+        }
+    )
+    provider = ReportProvider(
+        _store(), client=FakeClient([json.dumps(raw, ensure_ascii=False)])
+    )
+
+    result = await provider.reduce_coding(
+        [local_output, LocalCodingOutput(shard_id="shard-b", units=[])],
+        session_id="session-report",
+        model_config=_model_config(),
+        targets=ALL_TARGETS,
+        turn_speakers={"turn-worker": "worker"},
+        scene=Scene.online,
+        media=Media.text,
+    )
+
+    assert result.coded_evidence[0].ref == DialogueRef.model_validate(frozen_ref)
+
+
 async def test_reduce_requires_exactly_two_distinct_shard_outputs() -> None:
     from app.reports.report_provider import LocalCodingOutput, ReportProvider
 
