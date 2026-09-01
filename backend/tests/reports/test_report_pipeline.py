@@ -1059,6 +1059,38 @@ def test_reduce_source_normalization_builds_carrier_for_orphan_exact_evidence(
     assert carrier.summary == evidence.context
 
 
+def test_reduce_source_normalization_does_not_build_carrier_for_invalid_source(
+    test_engine: Engine,
+) -> None:
+    from app.reports.report_pipeline import _normalize_reduce_output_sources
+
+    job = _create_job(test_engine)
+    coding_input, _ = _opportunity_inputs(test_engine, job)
+    output = _global_output()
+    target = CoreDimension.respectful_communication
+    evidence = next(item for item in output.coded_evidence if item.target is target)
+    evidence.unit_id = "model-invented-unit"
+    evidence.ref = DialogueRef(
+        kind="dialogue",
+        turn_id="model-invented-turn",
+        quote="原始逐字稿里不存在的句子",
+    )
+
+    partition = _normalize_reduce_output_sources(coding_input, output)
+    normalized = next(
+        item
+        for item in partition.usable_output.coded_evidence
+        if item.target is target
+    )
+
+    assert normalized.unit_id == "model-invented-unit"
+    assert not [
+        unit
+        for unit in partition.usable_output.units
+        if unit.id.startswith("source-passthrough-evidence-")
+    ]
+
+
 def test_reduce_source_normalization_does_not_claim_carrier_was_searched(
     test_engine: Engine,
 ) -> None:

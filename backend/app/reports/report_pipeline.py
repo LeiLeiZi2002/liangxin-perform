@@ -726,6 +726,31 @@ def _matching_unit_ids(
     return [unit.id for unit in units if ref.event_id in unit.audio_event_ids]
 
 
+def _source_ref_exists(
+    coding_input: CodingInput,
+    ref: DialogueRef | WorkRecordRef | AudioEventRef,
+) -> bool:
+    if isinstance(ref, DialogueRef):
+        turn_text = next(
+            (
+                turn.text
+                for turn in coding_input.turns
+                if turn.turn_id == ref.turn_id
+            ),
+            None,
+        )
+        return turn_text is not None and ref.quote in turn_text
+    if isinstance(ref, WorkRecordRef):
+        if coding_input.work_record is None:
+            return False
+        fragments = canonical_work_record_fragments(coding_input.work_record).get(
+            ref.field,
+            (),
+        )
+        return any(ref.quote in fragment for fragment in fragments)
+    return False
+
+
 def _normalize_evidence_unit(
     evidence: CodedEvidence,
     units: Sequence[MeaningUnit],
@@ -750,6 +775,8 @@ def _normalize_reduce_output_sources(
     def evidence_carrier(evidence: CodedEvidence) -> CodedEvidence:
         normalized = _normalize_evidence_unit(evidence, normalized_units)
         if _matching_unit_ids(normalized.ref, normalized_units):
+            return normalized
+        if not _source_ref_exists(coding_input, normalized.ref):
             return normalized
         if isinstance(normalized.ref, DialogueRef):
             source_locator = (
