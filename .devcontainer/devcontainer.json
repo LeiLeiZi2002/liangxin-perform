@@ -10,7 +10,7 @@
     }
   },
   "postCreateCommand": "python3 -m venv .venv && .venv/bin/python -m pip install -r backend/requirements.lock && .venv/bin/python -m pip install --no-deps -e ./backend && cd frontend && npm ci",
-  "postStartCommand": "mkdir -p data/.runtime; nohup bash scripts/start-codespace.sh > data/.runtime/start-codespace.log 2>&1 </dev/null &",
+  "postStartCommand": "mkdir -p data/.runtime; nohup bash -c 'bash scripts/start-codespace.sh > data/.runtime/start-codespace.log 2>&1 </dev/null &'",
   "forwardPorts": [5173],
   "portsAttributes": {
     "5173": {

@@ -37,6 +37,7 @@ if (Test-Path -LiteralPath $devcontainerPath -PathType Leaf) {
         Assert-Contract ([string]$devcontainer.postStartCommand -match 'start-codespace\.sh') 'Codespaces 启动钩子必须调用 start-codespace.sh'
         Assert-Contract ([string]$devcontainer.postStartCommand -match '\bnohup\b') 'Codespaces 启动钩子必须让服务在生命周期命令结束后继续运行'
         Assert-Contract ([string]$devcontainer.postStartCommand -notmatch '\bsetsid\b') 'Codespaces 启动钩子不得使用实测后无法保活服务的 setsid'
+        Assert-Contract ([string]$devcontainer.postStartCommand -match "nohup bash -c 'bash scripts/start-codespace\.sh .* &'" ) 'Codespaces 必须在 nohup 的内层 shell 中启动后台服务'
     }
     catch {
         Assert-Contract $false "devcontainer 配置无法解析：$($_.Exception.Message)"
