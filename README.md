@@ -102,6 +102,6 @@ bash scripts/verify-demo.sh
 
 项目开发：LeiLeiZi2002
 
-协作开发工具：OpenAI Codex
+协作开发：OpenAI Codex
 
 程序代码按照 [MIT License](LICENSE) 发布。案例、人物档案、量规、模拟材料和其他测评内容适用单独的[内容许可说明](CONTENT_LICENSE.md)，不随 MIT License 开放。内容来源和虚构性说明见 [CONTENT_PROVENANCE.md](CONTENT_PROVENANCE.md)，第三方依赖说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
