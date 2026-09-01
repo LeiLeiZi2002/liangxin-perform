@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --require-hashes -r backend/requirements.lock
+          .venv/bin/python -m pip install --no-deps -e ./backend
+
+      - name: Install frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Check public release content
+        shell: pwsh
+        run: ./scripts/tests/test-public-release.ps1 -RequirePublicSnapshot
+
+      - name: Check Codespaces contract
+        shell: pwsh
+        run: ./scripts/tests/test-codespaces-readme.ps1
+
+      - name: Verify application
+        env:
+          E2E_BROWSER_CHANNEL: chromium
+        run: bash scripts/verify-demo.sh

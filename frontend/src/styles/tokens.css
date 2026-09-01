@@ -1,0 +1,25 @@
+:root {
+  --paper: #f3eddf;
+  --paper-light: #faf7ef;
+  --paper-deep: #e7dfcf;
+  --ink: #173149;
+  --ink-soft: #43576a;
+  --ink-faint: #78848a;
+  --coral: #c95f54;
+  --coral-dark: #9d443c;
+  --sage: #70827a;
+  --sage-light: #dbe2da;
+  --sage-dark: #4f635a;
+  --muted: #78848a;
+  --line: #c9c1b2;
+  --line-dark: #8e928b;
+  --font-title: 'Source Han Serif SC', 'Noto Serif CJK SC', 'Songti SC', STSong, 'SimSun', serif;
+  --font-body: 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-mono: 'Cascadia Mono', 'SFMono-Regular', Consolas, 'Microsoft YaHei UI', monospace;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3.5rem;
+  --space-8: 6rem;
+  --content: 1180px;
+  --focus: 0 0 0 3px rgba(201, 95, 84, 0.28);
+}

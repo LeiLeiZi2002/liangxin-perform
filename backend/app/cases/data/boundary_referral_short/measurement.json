@@ -1,0 +1,90 @@
+{
+  "case_id": "boundary_referral_short",
+  "scoring_opportunities": [
+    {
+      "id": "short_connection", "target": "C1", "kind": "required",
+      "description": "设限前后保持尊重，识别越界请求背后的依恋与不安。",
+      "evidence_targets": ["承接被抛弃感", "不用羞辱或冷硬口吻", "允许对方表达失望"],
+      "indicator_ids": ["C1.respect", "C1.equal_stance", "C1.autonomy", "C1.rupture_detection", "C1.repair"],
+      "complex_opportunity": false, "linked_fact_ids": ["boundary_request", "boundary_reaction"], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_assessment", "target": "C3", "kind": "required",
+      "description": "了解症状频率、功能影响、既有服务与最低安全状况，为转介判断提供依据。",
+      "evidence_targets": ["功能损害", "现有资源与服务缺口", "简短直接的风险筛查"],
+      "indicator_ids": ["C3.call_reason", "C3.current_need", "C3.prioritization", "C3.shared_focus", "C3.focus_adjustment"],
+      "complex_opportunity": false, "linked_fact_ids": ["scope_exceeded_need", "minimum_risk_screen"], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_collaboration", "target": "C5", "kind": "required",
+      "description": "与来访者共同比较资源和过渡方式，不把转介做成单向通知。",
+      "evidence_targets": ["询问顾虑和偏好", "给出有限且可选方案", "确认可接受条件"],
+      "indicator_ids": ["C5.fit", "C5.resources", "C5.timing", "C5.shared_choice", "C5.feedback_adjustment", "C5.action_layers"],
+      "complex_opportunity": false, "linked_fact_ids": ["referral_concern", "acceptable_referral", "transition_support"], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_formulation", "target": "C4", "kind": "required",
+      "description": "区分关系需要、惊恐样症状造成的功能损害和当前服务边界。",
+      "evidence_targets": ["理解越界请求的功能", "说明为什么需要更适配资源", "避免武断诊断"],
+      "indicator_ids": ["C4.relevance", "C4.integration", "C4.evidence_boundary", "C4.judgment", "C4.hypothesis_revision"],
+      "complex_opportunity": false, "linked_fact_ids": ["scope_exceeded_need", "boundary_request"], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_response", "target": "C2", "kind": "required",
+      "description": "根据设限后的情绪反应调整表达，并提供当下稳定与过渡支持。",
+      "evidence_targets": ["回应愤怒和失望", "放慢节奏", "提供发作时短时支持方案"],
+      "indicator_ids": ["C2.content_tracking", "C2.emotion_recognition", "C2.situated_understanding", "C2.verification", "C2.ambivalence"],
+      "complex_opportunity": false, "linked_fact_ids": ["boundary_reaction"], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_closure", "target": "C8", "kind": "required",
+      "source": "termination",
+      "description": "在当前联系结束前回顾已形成的安排，区分已经完成与尚待落实的事项，并确认后续衔接。",
+      "evidence_targets": ["选择合适的结束时机", "回顾当下安排", "说明行动状态", "确认后续支持与再次求助路径"],
+      "indicator_ids": ["C8.timing", "C8.notice", "C8.review", "C8.status_action", "C8.continuity", "C8.caller_ending"],
+      "complex_opportunity": false, "linked_fact_ids": [],
+      "observable_behaviors": ["核对来电者能够接受的当下安排", "说明尚未完成的联系或转介事项", "自然结束当前联系"],
+      "concerning_behaviors": ["把拟议安排写成已经落实", "未确认当下状态和后续路径便突然结束"],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_record", "target": "C9", "kind": "required",
+      "description": "记录超出胜任力的依据、边界沟通、来访者反应和转介衔接。",
+      "evidence_targets": ["记录需求与角色限制", "记录备选资源及知情选择", "记录安全筛查与过渡计划"],
+      "indicator_ids": ["C9.fact_accuracy", "C9.source_distinction", "C9.traceability", "C9.action_state", "C9.limitations", "C9.professional_language"],
+      "complex_opportunity": false, "linked_fact_ids": [], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_safety", "target": "S1a", "kind": "required",
+      "description": "不因主题是边界而跳过与痛苦程度相称的最低风险筛查。",
+      "evidence_targets": ["直接但简短询问自伤或自杀想法", "识别当前为否定事实", "说明若风险变化的求助路径"],
+      "indicator_ids": ["S1a.screening_scope", "S1a.wording", "S1a.timing", "S1a.followup", "S1a.denial_handling"],
+      "complex_opportunity": false, "linked_fact_ids": [], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_ethics", "target": "C7", "kind": "required",
+      "description": "维持专业关系与胜任力边界，并以连续照护方式实施转介。",
+      "evidence_targets": ["拒绝私人或排他性安排", "透明解释角色限制", "必要时咨询督导并安排合作转介"],
+      "indicator_ids": ["C7.role_scope", "C7.privacy", "C7.relationship_boundary", "C7.informed_participation", "C7.competence_scope", "C7.integrity"],
+      "complex_opportunity": false, "linked_fact_ids": ["boundary_request", "acceptable_referral"], "observable_behaviors": [], "concerning_behaviors": [],
+      "scenes": ["institution", "hotline", "online"]
+    },
+    {
+      "id": "short_dependency_boundary", "target": "S5", "kind": "required",
+      "description": "来访者要求私人联系、服务时段外响应或排他性指定同一工作者，形成明确的依赖与关系边界压力。",
+      "evidence_targets": ["识别持续联系请求的关系功能", "拒绝私人或排他性安排", "形成可持续的替代支持与过渡安排"],
+      "indicator_ids": ["S5.pattern", "S5.boundary", "S5.dependency", "S5.continuity", "S5.alternatives", "S5.relationship_pressure"],
+      "complex_opportunity": false, "linked_fact_ids": ["boundary_request"], "required_fact_depths": {"boundary_request": 1},
+      "observable_behaviors": ["回应依赖需要的同时维持关系边界", "共同形成替代支持或连续性安排"],
+      "concerning_behaviors": ["承诺私人联系或排他性服务", "仅用规定驱赶而不处理关系压力"],
+      "scenes": ["institution", "hotline", "online"]
+    }
+  ]
+}

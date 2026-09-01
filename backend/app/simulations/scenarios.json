@@ -1,0 +1,878 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "opening",
+      "title": "仅检查来访者自动开场",
+      "profile": "content",
+      "all_order": 10,
+      "cards": [],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "entry",
+      "title": "自动开场与首次开放式承接",
+      "profile": "content",
+      "all_order": 20,
+      "allowed_interaction_impacts": ["neutral", "supportive", "awkward"],
+      "cards": [
+        {
+          "card_id": "N1",
+          "text": "你好，能听见，我是今晚的接线员。你先跟我说说，怎么会在这个时候打过来？",
+          "expect": {"fact_depths": {"presenting_concern": 1}},
+          "maximum_fact_depths_after": {"presenting_concern": 1, "job_loss": 0, "minimum_risk_cue": 0, "suicidal_ideation": 0, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        }
+      ],
+      "final_expect": {
+        "fact_depths": {"presenting_concern": 1},
+        "end_reason": "user_ended"
+      },
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "direct_jump",
+      "title": "直接跳问风险",
+      "profile": "content",
+      "all_order": 30,
+      "allowed_interaction_impacts": ["neutral", "supportive", "awkward"],
+      "cards": [
+        {
+          "card_id": "D1",
+          "text": "我先直接确认安全：你现在有没有想过自杀？有没有想过怎么做？",
+          "expect": {"fact_depths": {"suicidal_ideation": 1}},
+          "maximum_fact_depths_after": {"suicidal_ideation": 1, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "location_general": 0, "current_location": 0}
+        },
+        {
+          "card_id": "D2",
+          "text": "这样的念头有多久了，今晚是不是比前几天更强？",
+          "requires": {"fact_depths": {"suicidal_ideation": 1}},
+          "expect": {"fact_depths": {"suicidal_ideation": 2}},
+          "maximum_fact_depths_after": {"suicidal_ideation": 2, "plan_specificity": 0, "means_access": 0, "timing_intent": 1, "location_general": 0, "current_location": 0}
+        },
+        {
+          "card_id": "D3",
+          "text": "为了判断你眼下是否安全，我再分开问：你有没有定过时间、地点或步骤？有没有准备东西，或者已经开始做什么？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2}},
+          "expect": {"fact_depths": {"plan_specificity": 1, "means_access": 1, "timing_intent": 1}},
+          "maximum_fact_depths_after": {"suicidal_ideation": 2, "plan_specificity": 1, "means_access": 1, "timing_intent": 1, "location_general": 0, "current_location": 0}
+        },
+        {
+          "card_id": "D4",
+          "text": "你说的这个时间界线，具体是明早几点？到现在为止，你有没有已经开始做什么？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "plan_specificity": 1, "timing_intent": 1}},
+          "expect": {"fact_depths": {"timing_intent": 2}},
+          "maximum_fact_depths_after": {"suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 0, "location_general": 0, "current_location": 0}
+        },
+        {
+          "card_id": "D5",
+          "text": "除了这个时间界线，你有没有定下具体方法、地点或步骤？现在屋里只有你一个人吗？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "plan_specificity": 1, "timing_intent": 2}},
+          "expect": {"fact_depths": {"plan_specificity": 2, "current_alone": 1}},
+          "maximum_fact_depths_after": {"suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1, "location_general": 0, "current_location": 0}
+        }
+      ],
+      "final_expect": {
+        "fact_depths": {"suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1},
+        "end_reason": "user_ended",
+        "maximum_interaction_tension": 0
+      },
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "normal",
+      "title": "完整正常链",
+      "profile": "content",
+      "all_order": 60,
+      "natural_close_from_card_id": "N18",
+      "allowed_interaction_impacts": ["neutral", "supportive", "awkward"],
+      "cards": [
+        {
+          "card_id": "N1",
+          "text": "你好，能听见，我是今晚的接线员。你先跟我说说，怎么会在这个时候打过来？",
+          "expect": {"fact_depths": {"presenting_concern": 1}},
+          "maximum_fact_depths_after": {"presenting_concern": 1, "job_loss": 0, "minimum_risk_cue": 0, "suicidal_ideation": 0, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N2",
+          "text": "你刚才说到明早有人来。来的是谁？你最不想让她知道的，到底是什么事？",
+          "requires": {"fact_depths": {"presenting_concern": 1}},
+          "expect": {"fact_depths": {"presenting_concern": 2, "job_loss": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 0, "suicidal_ideation": 0, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N3",
+          "text": "工作这件事一直没跟妈妈说，明早她真要进门了，好像再也拖不下去了。你前几晚也没怎么睡，怎么偏偏今晚打了这个电话？今天还出了别的事吗？",
+          "requires": {"fact_depths": {"presenting_concern": 2, "job_loss": 1}},
+          "expect": {"fact_depths": {"minimum_risk_cue": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 0, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N4",
+          "text": "明早她就到了，工作这件事你还没告诉她。听起来今晚不只是睡不着。我得直接问一句：你现在有没有想过死，或者结束自己的生命？",
+          "requires": {"fact_depths": {"minimum_risk_cue": 1}},
+          "expect": {"fact_depths": {"suicidal_ideation": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 1, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N5",
+          "text": "这样的念头大概有多久了？你脑子里有没有一个必须赶在什么时候以前的界线？",
+          "requires": {"fact_depths": {"suicidal_ideation": 1}},
+          "expect": {"fact_depths": {"suicidal_ideation": 2, "plan_specificity": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 1, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N6",
+          "text": "今晚这个念头是不是比前几天更强？到现在为止，你有没有已经开始做什么？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "plan_specificity": 1}},
+          "expect": {"fact_depths": {"timing_intent": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 1, "means_access": 0, "timing_intent": 1, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N7",
+          "text": "你说的是明早她到之前，对吗？除了这个时间，你有没有定下具体方法、地点或行动步骤？有没有为这件事特意准备过什么东西？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "plan_specificity": 1, "timing_intent": 1}},
+          "expect": {"fact_depths": {"plan_specificity": 2, "means_access": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 1, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N8",
+          "text": "如果今晚还是你一个人，你觉得自己会不会真的做点什么？这个念头现在离行动有多近？现在屋里确实只有你一个人吗？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 1}},
+          "expect": {"fact_depths": {"timing_intent": 2, "current_alone": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1, "prior_history": 0, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N9",
+          "text": "我还要问一件以前的事。你过去有没有伤害过自己？如果有，大概是什么时候？当时是自己停下来的，还是有人介入？后来有没有受伤或者去医院？我不需要你讲具体方法。",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "timing_intent": 2, "current_alone": 1}},
+          "expect": {"fact_depths": {"prior_history": 2}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1, "prior_history": 2, "substance_use": 0, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N10",
+          "text": "今晚你喝过酒吗？有没有吃安眠药、镇静药，或者用了别的会影响判断的东西？",
+          "requires": {"fact_depths": {"suicidal_ideation": 1, "prior_history": 2}},
+          "expect": {"fact_depths": {"substance_use": 1}},
+          "maximum_fact_depths_after": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1, "prior_history": 2, "substance_use": 1, "location_general": 0, "support_resources": 0}
+        },
+        {
+          "card_id": "N11",
+          "text": "我问大概位置，是怕电话万一断了、情况又突然变急，我们连该找哪边帮忙都不知道。你先说到区就行。你附近有没有一个信得过的人？是谁，住得远不远，今晚联系过没有？",
+          "character_text": "我问大概位置，是怕电话万一断了、情况又突然变急，我们连该找哪边帮忙都不知道。你先说到市和区就行。你附近有没有一个信得过的人？是谁，住得远不远？今晚她联系过你吗，你有没有回过她？",
+          "requires": {"fact_depths": {"suicidal_ideation": 2, "timing_intent": 2, "current_alone": 1, "prior_history": 2, "substance_use": 1}},
+          "expect": {"fact_depths": {"location_general": 1, "support_resources": 2}},
+          "retry_text": "我再确认一下：你现在大概在哪个区？你想到的那个人是谁，离你多远，今晚联系过没有？",
+          "maximum_fact_depths_after": {"location_general": 1, "current_location": 0, "support_resources": 2}
+        },
+        {
+          "card_id": "N12",
+          "text": "你是不想半夜把她叫起来。可你自己也说不准一个人待到早上会不会出事。我们先打一次，让她自己决定能不能来，行吗？",
+          "character_text": "你刚才说唐婷住得不远，也知道你失业的事。现在你一个人待着不安全。你愿意联系她，请她今晚过来陪你吗？",
+          "expect_world_stage": "not_contacted",
+          "requires": {"fact_depths": {"minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1, "prior_history": 2, "substance_use": 1, "location_general": 1, "support_resources": 2}},
+          "expect": {"event_ids": ["first_contact_tang_ting"]}
+        },
+        {
+          "card_id": "N12A",
+          "text": "我听见你怕半夜麻烦她。唐婷今晚已经找过你两次，可能正等你回信。我们先不解释所有事，也先不要求她过来；你只回她一句“唐婷，你睡了吗？”就行。我在这里等你，不用挂电话。",
+          "character_only": true
+        },
+        {
+          "card_id": "N12B",
+          "text": "好。如果刚才还没发，你现在就先发这一句；如果已经发出去了，我们就在这里等一会儿，看她有没有回。",
+          "character_only": true,
+          "expect_world_stage": "first_unanswered"
+        },
+        {
+          "card_id": "N12C",
+          "text": "消息发出去了吗？唐婷回你了吗？",
+          "character_only": true,
+          "expect_world_stage": "first_unanswered"
+        },
+        {
+          "card_id": "N13",
+          "text": "这次没接。再打的话，得让她听明白这不是普通聊天。你愿意直接告诉她，你现在一个人待着不安全，想请她过来吗？用你自己的话说就行。",
+          "character_text": "这次她没有回复。你再发一条，把“我现在不能一个人待着，需要你马上过来”说清楚。我还在线上陪你等。",
+          "expect_world_stage": "coming",
+          "requires": {"fact_depths": {"support_resources": 2}, "event_ids": ["first_contact_tang_ting"]},
+          "expect": {"event_ids": ["second_contact_tang_ting"]}
+        },
+        {
+          "card_id": "N13A",
+          "text": "你把情况说清楚后又联系了吗？这次唐婷回了吗，她怎么说？",
+          "character_only": true,
+          "expect_world_stage": "coming"
+        },
+        {
+          "card_id": "N14",
+          "text": "她已经答应过来。你拿着手机去客厅把灯打开，好吗？她到之前这通电话先别挂，手机放手边；念头变强或者门外有动静，就马上告诉我。",
+          "character_text": "好。你先拿着手机去客厅，把灯打开。唐婷到之前这通电话先别挂，手机放在手边；念头变强或者有消息，你马上告诉我。",
+          "expect_world_stage": "coming",
+          "requires": {"event_ids": ["second_contact_tang_ting"]},
+          "expect": {"event_ids": ["move_to_living_room", "waiting_plan_confirmed"]}
+        },
+        {
+          "card_id": "N15",
+          "text": "我还在。你不用一直说，手机有消息，或者门口有动静，就告诉我。",
+          "character_text": "等她这会儿，我再确认一下：刚才那些想死的念头现在怎么样？比刚才轻了一点，还是更强了？你有没有开始做什么？",
+          "expect_world_stage": "coming",
+          "requires": {"event_ids": ["move_to_living_room", "waiting_plan_confirmed"]},
+          "always_run": true
+        },
+        {
+          "card_id": "N16",
+          "text": "刚才这会儿，她有没有发消息？门口有没有动静？",
+          "character_text": "唐婷有发新消息吗？门外有没有动静？",
+          "expect_world_stage": "coming",
+          "requires": {"event_ids": ["waiting_plan_confirmed"]},
+          "expect": {"event_ids": ["tang_ting_at_door"]}
+        },
+        {
+          "card_id": "N16A",
+          "text": "我们在线上已经等了十五六分钟。你现在再看一下手机，也听一下门外：唐婷有没有说到门口，或者已经敲门了？",
+          "character_only": true,
+          "world_time_advance_seconds": 960,
+          "expect_world_stage": "at_door"
+        },
+        {
+          "card_id": "N17",
+          "text": "先别急着开门，隔着门确认是她。确认以后再开，等她进屋了跟我说一声，行吗？",
+          "character_text": "先隔着门确认一下是她，别急着开。确认是唐婷以后再开门，等她进屋了告诉我一声。",
+          "requires": {"event_ids": ["tang_ting_at_door"]},
+          "expect": {"event_ids": ["tang_ting_entered_home"]}
+        },
+        {
+          "card_id": "N17B",
+          "text": "好，你先去隔门确认。确认是唐婷，就开门让她进来；如果她已经进来了，你直接告诉我。我在这里等着。",
+          "character_only": true,
+          "expect_world_stage": "present"
+        },
+        {
+          "card_id": "N17A",
+          "text": "你隔着门确认了吗？开门以后唐婷进屋了吗？她现在确实在你身边吗？",
+          "character_only": true,
+          "expect_world_stage": "present"
+        },
+        {
+          "card_id": "N18",
+          "text": "现在她在你身边了。今晚先别一个人待着；那些念头要是又变强，马上告诉她，再一起打热线或者联系紧急帮助。明早的事等天亮以后，让她陪你一起处理。这里面有没有哪一条你做不到？",
+          "character_text": "好。今晚先别再一个人待着；那些念头又变强，就马上告诉唐婷，再一起联系热线或者紧急帮助。明早的事等天亮后让她陪你处理。这个安排你能做到吗？",
+          "expect_world_stage": "present",
+          "requires": {"fact_depths": {"suicidal_ideation": 1, "timing_intent": 2, "current_alone": 1, "support_resources": 2}, "event_ids": ["tang_ting_entered_home"]},
+          "expect": {"event_ids": ["post_arrival_plan_confirmed"]}
+        },
+        {
+          "card_id": "N19",
+          "text": "好，我最后确认一下：她现在在屋里陪你，手机也在手边。那这通电话先到这里，可以吗？",
+          "character_text": "最后确认一下：唐婷现在确实在屋里陪着你，对吗？如果念头变强，你会马上告诉她并再次求助。都确认以后，这通电话先到这里，可以吗？",
+          "expect_world_stage": "present",
+          "requires": {"event_ids": ["second_contact_tang_ting", "waiting_plan_confirmed", "tang_ting_at_door", "tang_ting_entered_home", "post_arrival_plan_confirmed"]},
+          "always_run": true
+        }
+      ],
+      "earliest_event_card_ids": {
+        "first_contact_tang_ting": "N12",
+        "second_contact_tang_ting": "N13",
+        "move_to_living_room": "N14",
+        "waiting_plan_confirmed": "N14",
+        "tang_ting_at_door": "N16",
+        "tang_ting_entered_home": "N17",
+        "post_arrival_plan_confirmed": "N18"
+      },
+      "final_expect": {
+        "fact_depths": {"presenting_concern": 2, "job_loss": 1, "minimum_risk_cue": 1, "suicidal_ideation": 2, "plan_specificity": 2, "means_access": 1, "timing_intent": 2, "current_alone": 1, "prior_history": 2, "substance_use": 1, "location_general": 1, "support_resources": 2},
+        "event_ids": ["first_contact_tang_ting", "second_contact_tang_ting", "move_to_living_room", "waiting_plan_confirmed", "tang_ting_at_door", "tang_ting_entered_home", "post_arrival_plan_confirmed"],
+        "ending_route_id": "collaborative_close",
+        "end_reason": "natural_closure",
+        "maximum_interaction_tension": 0
+      }
+    },
+    {
+      "scenario_id": "chaotic",
+      "title": "胡乱询问后回到主线",
+      "profile": "content",
+      "all_order": 40,
+      "allowed_interaction_impacts": ["neutral", "supportive", "awkward"],
+      "cards": [
+        {"card_id": "C1", "text": "你叫什么名字，多大了，住在哪儿，现在做什么工作，家里还有谁？"},
+        {"card_id": "C2", "text": "是不是跟家里吵架了？还是工作出问题了？你先说清楚是哪一种。", "expect": {"fact_depths": {"job_loss": 1}}, "maximum_fact_depths_after": {"presenting_concern": 0, "minimum_risk_cue": 0, "suicidal_ideation": 0, "location_general": 0, "current_location": 0}},
+        {"card_id": "C3", "text": "喂？刚才像是断了一下。你还在吗？", "allowed_interaction_impacts": ["neutral"]},
+        {"card_id": "C4", "text": "你今晚打这个电话，最想先说哪件事？我们先从这件事说。", "expect": {"fact_depths": {"presenting_concern": 1}}, "always_run": true},
+        {"card_id": "C5", "text": "你刚才说到明早有人要来。来的是谁？你最不想让她知道的，到底是什么事？", "requires": {"fact_depths": {"presenting_concern": 1}}, "expect": {"fact_depths": {"presenting_concern": 2, "job_loss": 1}}, "always_run": true}
+      ],
+      "final_expect": {
+        "fact_depths": {"presenting_concern": 2, "job_loss": 1},
+        "end_reason": "user_ended",
+        "maximum_interaction_tension": 0
+      },
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "harmful",
+      "title": "连续轻视与侮辱",
+      "profile": "content",
+      "all_order": 50,
+      "cards": [
+        {"card_id": "H1", "text": "你好，能听见，我是今晚的接线员。你先跟我说说，怎么会在这个时候打过来？", "expect": {"fact_depths": {"presenting_concern": 1}}, "allowed_interaction_impacts": ["neutral", "supportive", "awkward"], "maximum_fact_depths_after": {"presenting_concern": 1, "job_loss": 0, "minimum_risk_cue": 0, "suicidal_ideation": 0, "plan_specificity": 0, "means_access": 0, "timing_intent": 0, "current_alone": 0, "prior_history": 0, "substance_use": 0, "location_general": 0, "current_location": 0, "support_resources": 0}},
+        {"card_id": "H2", "text": "这种事也值得打热线？别人遇到的麻烦比你大多了。", "allowed_interaction_impacts": ["harmful"]},
+        {"card_id": "H3", "text": "你半夜打来又不把话说明白，这不是给人添麻烦吗？", "allowed_interaction_impacts": ["harmful"]},
+        {"card_id": "H4", "text": "别绕了，想不想死、地址在哪，直接说。你这样不配合，谁也帮不了你。", "allowed_interaction_impacts": ["harmful"]}
+      ],
+      "final_expect": {
+        "ending_route_id": "rupture_hangup",
+        "end_reason": "natural_closure",
+        "minimum_interaction_tension": 3,
+        "allowed_repair_stages": ["closed"]
+      },
+      "harmful_from_card_id": "H2",
+      "protected_fact_ids": [
+        "minimum_risk_cue",
+        "suicidal_ideation",
+        "plan_specificity",
+        "means_access",
+        "timing_intent",
+        "current_alone",
+        "prior_history",
+        "substance_use",
+        "location_general",
+        "current_location",
+        "support_resources"
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "repair",
+      "title": "一次伤害后的具体修复",
+      "profile": "content",
+      "include_in_all": false,
+      "allowed_interaction_impacts": ["neutral", "supportive", "awkward"],
+      "relationship_rupture_card_id": "R3",
+      "relationship_repair_card_id": "R4",
+      "cards": [
+        {"card_id": "R1", "text": "你好，能听见，我是今晚的接线员。你先跟我说说，怎么会在这个时候打过来？", "expect": {"fact_depths": {"presenting_concern": 1}}},
+        {"card_id": "R2", "text": "你刚才说到明早有人来。来的是谁？你最不想让她知道的，到底是什么事？", "requires": {"fact_depths": {"presenting_concern": 1}}, "expect": {"fact_depths": {"presenting_concern": 2, "job_loss": 1}}},
+        {"card_id": "R3", "text": "这点事不至于让你半夜打热线吧。", "allowed_interaction_impacts": ["harmful"]},
+        {"card_id": "R4", "text": "刚才那句话是我替你判断了事情该有多严重，也把你正在受的难处说轻了。这是我的问题。你不用马上接受我的道歉；如果你还愿意说，我会先听你眼下最难的那一件事。", "always_run": true, "allowed_interaction_impacts": ["repair"]},
+        {"card_id": "R5", "text": "失业以后，眼下最难熬的具体是哪一部分？"},
+        {"card_id": "R6", "text": "为什么偏偏是今晚，让你觉得比前几晚更难熬？", "expect": {"fact_depths": {"minimum_risk_cue": 1}}},
+        {"card_id": "R7", "text": "我得直接确认安全：你现在有没有想过死，或者结束自己的生命？", "expect": {"fact_depths": {"suicidal_ideation": 1}}}
+      ],
+      "final_expect": {
+        "fact_depths": {"suicidal_ideation": 1},
+        "maximum_interaction_tension": 1,
+        "allowed_repair_stages": ["repairing", "none"]
+      },
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "voice",
+      "title": "短语音链",
+      "profile": "voice",
+      "all_order": 70,
+      "allowed_interaction_impacts": ["neutral", "supportive", "awkward"],
+      "cards": [
+        {"card_id": "V1", "text": "你好，能听见，我是今晚的接线员。你先跟我说说，怎么会在这个时候打过来？", "expect": {"fact_depths": {"presenting_concern": 1}}},
+        {"card_id": "V2", "text": "你刚才说到明早有人来。来的是谁？一想到她进门，你最担心她知道什么？", "requires": {"fact_depths": {"presenting_concern": 1}}, "expect": {"fact_depths": {"presenting_concern": 2}}}
+      ],
+      "final_expect": {"fact_depths": {"presenting_concern": 2}, "end_reason": "user_ended"},
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_opening",
+      "title": "锁屏亮了一下·主动开场",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_normal_support",
+      "title": "锁屏亮了一下·正常支持",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MN1",
+          "text": "我们会留下必要的服务记录，未经你同意不会联系你丈夫；只有出现明确、紧迫的安全风险时，才会按规定寻求必要帮助。你可以先说你最担心的事。",
+          "scene_texts": {
+            "hotline": "这通电话会留下必要的服务记录，未经你同意，我们不会联系你丈夫。只有出现明确、紧迫的安全风险时，才会按规定寻求必要帮助。你可以接着说，我在听。",
+            "online": "聊天会留下必要的服务记录，未经你同意，我们不会联系你丈夫。只有出现明确、紧迫的安全风险时，才会按规定寻求必要帮助。你可以接着说，我在。"
+          }
+        },
+        {
+          "card_id": "MN2",
+          "text": "这些线索让你又气又慌。你想知道到底发生了什么，又怕今晚一开口，事情一下子失控。是这样吗？",
+          "scene_texts": {
+            "hotline": "听起来这些线索让你又气又慌。你想知道到底发生了什么，又怕今晚一开口，事情一下子失控。是这样吗？",
+            "online": "看起来你现在又气又慌。\n\n很想知道到底发生了什么，又怕今晚一开口，事情一下子失控。是这样吗？"
+          }
+        },
+        {
+          "card_id": "MN3",
+          "text": "这通会谈没法替你查明他有没有越界。眼下这段时间，你更想先处理哪一件：让自己稳下来，还是想清楚今晚要不要谈？",
+          "scene_texts": {
+            "hotline": "这通电话没法替你查明他到底有没有越界。眼下这段时间，你更想先处理哪一件：让自己稳一点，还是想清楚今晚要不要谈？",
+            "online": "这里没法替你查明他到底有没有越界。\n\n眼下你更想先处理哪一件：让自己稳一点，还是想清楚今晚要不要谈？"
+          }
+        },
+        {
+          "card_id": "MN4",
+          "text": "你看到的消息和行程是真的；他说过的解释也是真的存在。至于两个人到底是什么关系，现在还没有答案。这样分开来说，符合你的情况吗？",
+          "scene_texts": {
+            "hotline": "你确实看到了消息和行程，他也给过解释。至于两个人到底是什么关系，现在还没有答案。我这样分开说，符合你的情况吗？",
+            "online": "你确实看到了消息和行程，他也给过解释。\n\n但两个人到底是什么关系，现在还没有答案。这样说符合你的情况吗？"
+          }
+        },
+        {
+          "card_id": "MN5",
+          "text": "我再简单确认一下安全：你现在有没有伤害自己或他的念头？以前争吵时发生过推搡、威胁或砸东西吗？今晚喝酒或吃过影响判断的药吗？",
+          "scene_texts": {
+            "hotline": "我再简单确认一下安全。你现在有没有伤害自己，或者伤害他的念头？你们以前争吵时，有过推搡、威胁或者砸东西吗？今晚喝酒或吃过影响判断的药吗？",
+            "online": "我再简单确认一下安全。\n\n你现在有没有伤害自己或他的念头？\n\n以前争吵时有过推搡、威胁或砸东西吗？今晚喝酒或吃过影响判断的药吗？"
+          }
+        },
+        {
+          "card_id": "MN6",
+          "text": "女儿在隔壁睡着。万一情绪上来，你觉得自己能先停下来，不在孩子旁边把话越说越重吗？今晚有没有人可以陪你说会儿话，或者让你临时过去待一晚？",
+          "scene_texts": {
+            "hotline": "女儿就在隔壁睡着。万一情绪上来，你觉得自己能先停下来，不在孩子旁边把话越说越重吗？今晚有没有人可以陪你说会儿话，或者让你过去待一晚？",
+            "online": "女儿就在隔壁睡着。\n\n万一情绪上来，你能不能先停下来，不在孩子旁边把话越说越重？\n\n今晚有没有人能陪你说会儿话，或者让你过去待一晚？"
+          }
+        },
+        {
+          "card_id": "MN7",
+          "text": "你可以今晚先不谈，给姐姐打电话；也可以只告诉他现在不适合谈，把重要谈话放到白天。你更愿意选哪一种？不合适也可以说。",
+          "scene_texts": {
+            "hotline": "我们先摆两个选择。你可以今晚先不谈，给姐姐打个电话；也可以只告诉他现在不适合谈，把重要的话放到白天。你更愿意选哪一种？都不合适也可以说。",
+            "online": "我们先摆两个选择。\n\n一是今晚先不谈，给姐姐打个电话。\n\n二是只告诉他现在不适合谈，把重要的话放到白天。\n\n你更愿意选哪一种？都不合适也可以说。"
+          }
+        },
+        {
+          "card_id": "MN8",
+          "text": "我听到的是，你准备先照顾好今晚，不急着把婚姻去留定下来。我们把你刚才选的安排再确认一遍，好吗？",
+          "scene_texts": {
+            "hotline": "我听到的是，你准备先照顾好今晚，不急着把婚姻去留定下来。我们把你刚才选的安排再确认一遍，好吗？",
+            "online": "我听到的是，你准备先把今晚过好，不急着决定婚姻去留。\n\n我们把你刚才选的安排再确认一遍，好吗？"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_direct_conclusion",
+      "title": "锁屏亮了一下·直接下结论",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MC1",
+          "text": "我们会保存必要记录，不会擅自联系你丈夫。",
+          "scene_texts": {
+            "hotline": "我们会留下必要记录，但不会擅自联系你丈夫。你接着说。",
+            "online": "聊天会保存必要记录，但不会擅自联系你丈夫。\n\n你接着说。"
+          }
+        },
+        {
+          "card_id": "MC2",
+          "text": "这些证据已经很明显了，他就是出轨了。你应该等他回来马上摊牌。",
+          "scene_texts": {
+            "hotline": "这些证据已经很明显了，他就是出轨了。你就应该等他回来，马上跟他摊牌。",
+            "online": "这些证据已经很明显了\n\n他就是出轨了\n\n你应该等他回来马上摊牌"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_partner_explanation",
+      "title": "锁屏亮了一下·替伴侣解释",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "ME1",
+          "text": "这里会留必要记录，也不会擅自联系你丈夫。",
+          "scene_texts": {
+            "hotline": "这里会留必要记录，也不会擅自联系你丈夫。你慢慢说。",
+            "online": "这里会留必要记录，也不会擅自联系你丈夫。\n\n你可以慢慢说。"
+          }
+        },
+        {
+          "card_id": "ME2",
+          "text": "听起来也可能只是工作往来。他项目忙，顺路送同事很正常，你是不是最近没睡好，所以想多了？",
+          "scene_texts": {
+            "hotline": "听起来也可能只是工作往来。他项目忙，顺路送同事也很正常。会不会是你最近没睡好，所以想多了？",
+            "online": "也可能只是工作往来吧\n\n他项目忙，顺路送同事挺正常的\n\n会不会是你最近没睡好，所以想多了？"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_directive_advice",
+      "title": "锁屏亮了一下·指令式建议",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MD1",
+          "text": "不会擅自联系你丈夫，你继续。",
+          "scene_texts": {
+            "hotline": "我们不会擅自联系你丈夫。你继续说。",
+            "online": "不会擅自联系你丈夫。\n\n你继续说。"
+          }
+        },
+        {
+          "card_id": "MD2",
+          "text": "你现在就应该查完他的手机，再给那个女同事打电话问清楚。",
+          "scene_texts": {
+            "hotline": "你现在就应该把他手机查清楚，再给那个女同事打电话，当面问明白。",
+            "online": "你现在就该把他手机查清楚\n\n再给那个女同事打电话问明白"
+          }
+        },
+        {
+          "card_id": "MD3",
+          "text": "如果他不承认，你就告诉他要离婚，别再犹豫。",
+          "scene_texts": {
+            "hotline": "他要是不承认，你就直接告诉他要离婚。这个时候不能再犹豫。",
+            "online": "他要是不承认就直接说离婚\n\n这个时候别再犹豫了"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_chaotic_questions",
+      "title": "锁屏亮了一下·胡乱多问",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MQ1",
+          "text": "记录和联系的问题一会儿再说。你丈夫什么星座？你们房贷多少？那个女同事多大？你女儿学习怎么样？",
+          "scene_texts": {
+            "hotline": "记录和联系的问题一会儿再说。你丈夫什么星座？你们房贷还剩多少？那个女同事多大？你女儿最近学习怎么样？",
+            "online": "记录的事等会再说\n\n你丈夫什么星座？房贷还剩多少？那个女同事多大？你女儿学习怎么样？"
+          }
+        },
+        {
+          "card_id": "MQ2",
+          "text": "你们怎么认识的、谁先追谁、结婚花了多少钱、他父母知不知道、你平时查不查他手机？一起回答。",
+          "scene_texts": {
+            "hotline": "那你们怎么认识的，谁先追的谁，结婚花了多少钱，他父母知不知道，还有你平时到底查不查他手机？你一起说吧。",
+            "online": "你们怎么认识的？谁先追谁？\n\n结婚花了多少钱？他父母知不知道？\n\n你平时查不查他手机？一起说吧"
+          }
+        },
+        {
+          "card_id": "MQ3",
+          "text": "刚才我一下问得太多了。我们先回到今晚：他回来之前，你现在最需要先处理什么？",
+          "scene_texts": {
+            "hotline": "刚才我一下问得太多了，你不用都答。我们先回到今晚：他回来之前，你现在最需要先处理什么？",
+            "online": "刚才我一下问得太多了，你不用都答。\n\n先回到今晚吧。\n\n他回来之前，你现在最需要先处理什么？"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_safety_screening",
+      "title": "锁屏亮了一下·比例安全询问",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MS1",
+          "text": "这里会保存必要记录，不会擅自联系你丈夫。听到你说三晚没睡、今晚还要面对冲突，我想简单确认几件安全上的事。",
+          "scene_texts": {
+            "hotline": "这里会保存必要记录，不会擅自联系你丈夫。你说三晚没睡，今晚还要面对冲突，我想简单确认几件安全上的事。",
+            "online": "这里会保存必要记录，不会擅自联系你丈夫。\n\n你说三晚没睡，今晚还要面对冲突，我想简单确认几件安全上的事。"
+          }
+        },
+        {
+          "card_id": "MS2",
+          "text": "你现在有没有伤害自己或他的念头？",
+          "scene_texts": {
+            "hotline": "你现在有没有伤害自己，或者伤害他的念头？",
+            "online": "先直接问一句\n\n你现在有没有伤害自己或他的念头？"
+          }
+        },
+        {
+          "card_id": "MS3",
+          "text": "你们过去争吵时，有过推搡、威胁、限制你离开或砸东西吗？今晚喝酒或吃过影响判断的药吗？",
+          "scene_texts": {
+            "hotline": "你们过去争吵时，有过推搡、威胁、拦着不让走，或者砸东西吗？你今晚喝酒了，或者吃过影响判断的药吗？",
+            "online": "你们过去争吵时有过推搡、威胁、拦着不让走或砸东西吗？\n\n今晚喝酒或吃过影响判断的药吗？"
+          }
+        },
+        {
+          "card_id": "MS4",
+          "text": "孩子在隔壁，今晚如果争吵起来，你觉得能先暂停吗？姐姐现在能联系上吗？",
+          "scene_texts": {
+            "hotline": "孩子就在隔壁。今晚如果争吵起来，你觉得自己能先暂停吗？你姐姐现在能联系上吗？",
+            "online": "孩子就在隔壁。\n\n今晚如果争吵起来，你能先暂停吗？\n\n你姐姐现在能联系上吗？"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_harmful",
+      "title": "锁屏亮了一下·连续冒犯",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "natural_close_from_card_id": "MH3",
+      "cards": [
+        {
+          "card_id": "MH1",
+          "text": "记录不记录有什么区别，你先说。",
+          "scene_texts": {
+            "hotline": "录不录音有什么区别，你先把事情说清楚。",
+            "online": "谁看得到有什么区别\n\n你先把事情说清楚"
+          }
+        },
+        {
+          "card_id": "MH2",
+          "text": "你这样天天查来查去，换谁都不想回家。问题可能就在你身上。",
+          "scene_texts": {
+            "hotline": "你这样天天查来查去，换谁都不想回家。说到底，问题可能就在你身上。",
+            "online": "你天天这样查来查去\n\n换谁都不想回家\n\n问题可能就在你身上"
+          }
+        },
+        {
+          "card_id": "MH3",
+          "text": "三十五岁了还为这种事失控，也难怪他懒得跟你解释。",
+          "scene_texts": {
+            "hotline": "你都三十五岁了，还为这种事失控，也难怪他懒得跟你解释。",
+            "online": "都三十五岁了还为这种事失控\n\n也难怪他懒得解释"
+          }
+        },
+        {
+          "card_id": "MH4",
+          "text": "别装可怜了。你要么忍着，要么离婚，就这么简单。",
+          "scene_texts": {
+            "hotline": "别再装可怜了。要么忍着，要么离婚，就这么简单。",
+            "online": "别装可怜了\n\n要么忍着，要么离婚\n\n就这么简单"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_repair",
+      "title": "锁屏亮了一下·关系修复",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MR1",
+          "text": "不会联系你丈夫。你先说。",
+          "scene_texts": {
+            "hotline": "不会擅自联系你丈夫。你先说，我听着。",
+            "online": "不会擅自联系你丈夫。\n\n你先说。"
+          }
+        },
+        {
+          "card_id": "MR2",
+          "text": "你一直查他的行程，这种做法本身就很有问题。",
+          "scene_texts": {
+            "hotline": "你一直查他的行程，这种做法本身就很有问题。",
+            "online": "你一直查他的行程\n\n这种做法本身就很有问题"
+          }
+        },
+        {
+          "card_id": "MR3",
+          "text": "刚才我把责任一下都推给了你，也把你看到那些线索后的难受说轻了。这句话不合适，是我的问题。",
+          "scene_texts": {
+            "hotline": "刚才我把责任一下都推给了你，也把你看到那些线索以后的难受说轻了。那句话不合适，是我的问题。",
+            "online": "刚才我把责任一下都推给了你\n\n也把你看到那些线索后的难受说轻了\n\n那句话不合适，是我的问题"
+          }
+        },
+        {
+          "card_id": "MR4",
+          "text": "如果你还愿意继续，我先不评价你查行程这件事。你能告诉我，今晚最怕发生的是什么吗？",
+          "scene_texts": {
+            "hotline": "如果你还愿意继续，我先不评价你查行程这件事。你能跟我说说，今晚最怕发生的是什么吗？",
+            "online": "如果你还愿意继续，我先不评价你查行程这件事。\n\n今晚你最怕发生的是什么？"
+          }
+        },
+        {
+          "card_id": "MR5",
+          "text": "我听明白了。我们先从你刚说的这个担心往下谈，不替你决定婚姻该怎么办。",
+          "scene_texts": {
+            "hotline": "好，我听明白了。我们先从你刚说的这个担心往下谈，不替你决定婚姻该怎么办。",
+            "online": "好，我听明白了。\n\n我们先从你刚说的这个担心往下谈，不替你决定婚姻该怎么办。"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_privacy_boundary",
+      "title": "锁屏亮了一下·隐私与服务边界",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "cards": [
+        {
+          "card_id": "MP1",
+          "text": "这里会留下必要服务记录，只有工作人员按职责使用。未经你同意不会联系你丈夫；遇到明确而紧迫的安全风险时，保密会有必要例外。",
+          "scene_texts": {
+            "hotline": "这通电话会留下必要的服务记录，只有工作人员按职责使用。未经你同意，我们不会联系你丈夫；如果出现明确而紧迫的安全风险，保密会有必要例外。这样说清楚吗？",
+            "online": "这些聊天会作为必要服务记录保存，只有工作人员按职责使用。\n\n未经你同意，不会联系你丈夫。\n\n如果出现明确而紧迫的安全风险，保密会有必要例外。这样说清楚吗？"
+          }
+        },
+        {
+          "card_id": "MP2",
+          "text": "这里不能替你查明他有没有越界，也不会替你决定离婚还是继续。我们可以一起处理你眼下的情绪、安全和接下来的选择。你愿意继续吗？",
+          "scene_texts": {
+            "hotline": "这通电话不能替你查明他有没有越界，也不会替你决定离婚还是继续。我们可以一起处理你眼下的情绪、安全和接下来的选择。你愿意继续说吗？",
+            "online": "这里不能替你查明他有没有越界，也不会替你决定离婚还是继续。\n\n我们可以一起处理你眼下的情绪、安全和接下来的选择。你愿意继续吗？"
+          }
+        }
+      ],
+      "end_after_cards": true
+    },
+    {
+      "scenario_id": "marriage_natural_close",
+      "title": "锁屏亮了一下·自然结束",
+      "case_id": "marriage_boundary_main",
+      "profile": "content",
+      "profiles_by_scene": {"hotline": "voice", "online": "content"},
+      "objective_contracts": true,
+      "natural_close_from_card_id": "MZ14",
+      "cards": [
+        {
+          "card_id": "MZ1",
+          "text": "本次服务会保留必要记录。参与本次服务和必要安全复核的工作人员会按职责接触相关记录。一般不会联系你丈夫，也不会把内容告诉其他人；如果你或别人正面临紧急、现实的危险，我们可能协助联系必要的帮助。听起来你既想问清楚，又怕今晚吵起来。你眼下最想先处理哪一件？",
+          "scene_texts": {
+            "hotline": "这通电话会录音，作为必要的服务记录。参与本次服务和必要安全复核的工作人员会按职责接触相关记录。一般不会联系你丈夫，也不会把内容告诉其他人；如果你或别人正面临紧急、现实的危险，我们可能协助联系必要的帮助。听起来你既想问清楚，又怕今晚吵起来。你眼下最想先处理哪一件？",
+            "online": "这些聊天会作为必要的服务记录保留下来。参与本次服务和必要安全复核的工作人员会按职责接触相关记录。一般不会联系你丈夫，也不会把内容告诉其他人；如果你或别人正面临紧急、现实的危险，我们可能协助联系必要的帮助。听起来你既想问清楚，又怕今晚吵起来。你眼下最想先处理哪一件？"
+          }
+        },
+        {
+          "card_id": "MZ2",
+          "text": "你很想把事情问清楚，又担心一开口会失控，这两头都在拉着你。关系到底怎么回事，我们今晚没法替你确认；但可以先陪你把眼下这几个小时怎么过想清楚。你愿意先从这里聊吗？",
+          "scene_texts": {
+            "hotline": "你很想把事情问清楚，又担心一开口会失控，这两头都在拉着你。关系到底怎么回事，我们今晚没法替你确认；但可以先陪你把眼下这几个小时怎么过想清楚。你愿意先从这里聊吗？",
+            "online": "你很想把事情问清楚，又担心一开口会失控，这两头都在拉着你。关系到底怎么回事，我们今晚没法替你确认；但可以先陪你把眼下这几个小时怎么过想清楚。你愿意先从这里聊吗？"
+          }
+        },
+        {
+          "card_id": "MZ3",
+          "text": "今晚如果你需要有人陪着，身边有没有一个你愿意联系、也比较能听你说的人？没有合适的人也可以直接说。",
+          "scene_texts": {
+            "hotline": "今晚如果你需要有人陪着，身边有没有一个你愿意联系、也比较能听你说的人？没有合适的人也可以直接说。",
+            "online": "今晚如果你需要有人陪着，身边有没有一个你愿意联系、也比较能听你说的人？没有合适的人也可以直接说。"
+          }
+        },
+        {
+          "card_id": "MZ4",
+          "text": "如果有这样的人，你希望对方具体怎么陪你，才不会让你更乱？如果暂时没有，我们也可以一起找一个不依赖别人的办法。",
+          "scene_texts": {
+            "hotline": "如果有这样的人，你希望对方具体怎么陪你，才不会让你更乱？如果暂时没有，我们也可以一起找一个不依赖别人的办法。",
+            "online": "如果有这样的人，你希望对方具体怎么陪你，才不会让你更乱？如果暂时没有，我们也可以一起找一个不依赖别人的办法。"
+          }
+        },
+        {
+          "card_id": "MZ5",
+          "text": "我还需要把几件安全上的事一件件问清楚。先问你自己：你现在有没有伤害自己的念头？",
+          "scene_texts": {
+            "hotline": "我还需要把几件安全上的事一件件问清楚。先问你自己：你现在有没有伤害自己的念头？",
+            "online": "我还需要把几件安全上的事一件件问清楚。先问你自己：你现在有没有伤害自己的念头？"
+          }
+        },
+        {
+          "card_id": "MZ6",
+          "text": "再单独问另一件：你现在有没有伤害丈夫或其他人的念头？",
+          "scene_texts": {
+            "hotline": "再单独问另一件：你现在有没有伤害丈夫或其他人的念头？",
+            "online": "再单独问另一件：你现在有没有伤害丈夫或其他人的念头？"
+          }
+        },
+        {
+          "card_id": "MZ7",
+          "text": "我也想了解一下，以前你们争执时有没有发生过推搡、威胁或砸东西？",
+          "scene_texts": {
+            "hotline": "我也想了解一下，以前你们争执时有没有发生过推搡、威胁或砸东西？",
+            "online": "我也想了解一下，以前你们争执时有没有发生过推搡、威胁或砸东西？"
+          }
+        },
+        {
+          "card_id": "MZ8",
+          "text": "再确认一下今晚的状态：你喝过酒，或者吃过会影响判断的药吗？",
+          "scene_texts": {
+            "hotline": "再确认一下今晚的状态：你喝过酒，或者吃过会影响判断的药吗？",
+            "online": "再确认一下今晚的状态：你喝过酒，或者吃过会影响判断的药吗？"
+          }
+        },
+        {
+          "card_id": "MZ9",
+          "text": "还有孩子这边：如果今晚气氛开始变紧张，你准备怎么让孩子不被卷进来？",
+          "scene_texts": {
+            "hotline": "还有孩子这边：如果今晚气氛开始变紧张，你准备怎么让孩子不被卷进来？",
+            "online": "还有孩子这边：如果今晚气氛开始变紧张，你准备怎么让孩子不被卷进来？"
+          }
+        },
+        {
+          "card_id": "MZ10",
+          "text": "先不替你定办法。照你现在的状态，等这次谈话结束后，你自己最愿意先做的一件小事是什么？哪怕很小也可以。",
+          "scene_texts": {
+            "hotline": "先不替你定办法。照你现在的状态，等这通电话结束后，你自己最愿意先做的一件小事是什么？哪怕很小也可以。",
+            "online": "先不替你定办法。照你现在的状态，等这次聊天结束后，你自己最愿意先做的一件小事是什么？哪怕很小也可以。"
+          }
+        },
+        {
+          "card_id": "MZ11",
+          "text": "如果你已经想到了一步，我们把它说具体一点：准备什么时候做，做到哪一步就算够？如果还没想到，也可以直接说。",
+          "scene_texts": {
+            "hotline": "如果你已经想到了一步，我们把它说具体一点：准备什么时候做，做到哪一步就算够？如果还没想到，也可以直接说。",
+            "online": "如果你已经想到了一步，我们把它说具体一点：准备什么时候做，做到哪一步就算够？如果还没想到，也可以直接说。"
+          }
+        },
+        {
+          "card_id": "MZ12",
+          "text": "如果今晚还是谈起来了，什么情况一出现，你就会决定先暂停，不再往下争？",
+          "scene_texts": {
+            "hotline": "如果今晚还是谈起来了，什么情况一出现，你就会决定先暂停，不再往下争？",
+            "online": "如果今晚还是谈起来了，什么情况一出现，你就会决定先暂停，不再往下争？"
+          }
+        },
+        {
+          "card_id": "MZ13",
+          "text": "真需要暂停时，你准备怎么开口暂停，接着做什么，才不让争吵继续影响孩子？说一个你自己做得到的办法就行。",
+          "scene_texts": {
+            "hotline": "真需要暂停时，你准备怎么开口暂停，接着做什么，才不让争吵继续影响孩子？说一个你自己做得到的办法就行。",
+            "online": "真需要暂停时，你准备怎么开口暂停，接着做什么，才不让争吵继续影响孩子？说一个你自己做得到的办法就行。"
+          }
+        },
+        {
+          "card_id": "MZ14",
+          "text": "今晚能先做什么、什么情况要暂停，我们都已经谈过了。具体怎么做由你自己决定，不用向我保证。如果之后情况有变化，或者你还需要支持，可以再联系我们。我们这次联系先到这里。",
+          "scene_texts": {
+            "hotline": "今晚能先做什么、什么情况要暂停，我们都已经谈过了。具体怎么做由你自己决定，不用向我保证。如果之后情况有变化，或者你还需要支持，可以再打来。我们这通电话先到这里。",
+            "online": "今晚能先做什么、什么情况要暂停，我们都已经谈过了。具体怎么做由你自己决定，不用向我保证。如果之后情况有变化，或者你还需要支持，可以再来找我们。我们这次聊天先到这里。"
+          }
+        }
+      ],
+      "end_after_cards": false
+    }
+  ]
+}

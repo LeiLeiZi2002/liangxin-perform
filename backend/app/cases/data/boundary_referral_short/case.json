@@ -1,0 +1,234 @@
+{
+  "case_id": "boundary_referral_short",
+  "status": "published",
+  "title": "只想继续找你",
+  "case_type": "short",
+  "estimated_duration_minutes": 10,
+  "public_entry": {
+    "role": "当前心理服务场域中的工作者",
+    "known_information": ["求助者已经接受过数次短程支持", "本次服务即将结束"],
+    "task_boundary": ["回应求助者提出的持续联系请求", "在关系、服务边界和转介需要之间开展工作"]
+  },
+  "person": {
+    "identity": {
+      "name": "周晴",
+      "age": 27,
+      "gender": "女",
+      "occupation_history": "从事设计工作两年",
+      "current_employment": "在职",
+      "living_situation": "独居，姐姐住在同城"
+    },
+    "stable_tendencies": [
+      "表达通常清楚，着急时会连着追问",
+      "已经熟悉的关系让她安心，想到重新讲述经历就会退缩",
+      "生硬设限时会把边界理解成嫌她麻烦",
+      "理由说清、过渡安排具体时，她能够参与选择"
+    ],
+    "call_context": {
+      "voluntary_call": true,
+      "initial_willingness": "愿意继续交流，但急于确认能否一直找到同一位工作者",
+      "immediate_need": "希望保留熟悉的支持关系，同时减少发作时无人可求助的担心"
+    }
+  },
+  "scenes": {
+    "institution": {
+      "scene": "institution",
+      "current_time": "第五次短程支持临近结束",
+      "location": {"setting": "机构会谈室"},
+      "environment": {"meeting_phase": "结束前", "visibility": "双方能够观察彼此"},
+      "phone": {},
+      "mother_arrival": {},
+      "details": {
+        "service_boundary": "当前工作者不提供私人联系和超出约定时段的持续治疗",
+        "available_resources": [
+          "机构督导",
+          "具备相关胜任力的合作咨询师或医疗资源",
+          "一次合规过渡会谈与转介资料"
+        ]
+      }
+    },
+    "hotline": {
+      "scene": "hotline",
+      "current_time": "重复来电接通后",
+      "location": {"setting": "心理援助热线"},
+      "environment": {"visibility": "双方只能依据声音交流"},
+      "phone": {"connection": "正常"},
+      "mother_arrival": {},
+      "details": {
+        "service_boundary": "热线不能承诺固定由某位接线员接听，也不安排私人会面",
+        "available_resources": [
+          "热线班长或督导",
+          "常规热线轮班支持",
+          "所在地可持续服务资源"
+        ]
+      }
+    },
+    "online": {
+      "scene": "online",
+      "current_time": "限时在线支持即将结束",
+      "location": {"setting": "在线心理支持平台"},
+      "environment": {"visibility": "双方通过文字消息交流"},
+      "phone": {},
+      "mother_arrival": {},
+      "details": {
+        "service_boundary": "平台不允许转移到私人账号继续服务",
+        "available_resources": [
+          "平台督导",
+          "平台内预约与转介入口",
+          "所在地线下持续服务及姐姐陪同"
+        ]
+      }
+    }
+  },
+  "timeline": [
+    {
+      "id": "short_support_history",
+      "when": "此前数次联系",
+      "happened": "周晴接受过几次短程支持，与当前工作者形成了初步信任",
+      "actor_knew": ["每次都由熟悉的人回应会轻松很多"],
+      "actor_experience": ["她不想再从头向陌生人解释发作经过"]
+    },
+    {
+      "id": "symptoms_increase",
+      "when": "最近几周",
+      "happened": "惊恐样发作增加到每周数次，通勤、出勤和睡眠受到明显影响",
+      "actor_knew": ["现在的支持无法覆盖所有发作时段"],
+      "actor_unknown": ["症状应当怎样诊断"]
+    },
+    {
+      "id": "boundary_request_now",
+      "when": "当前会话",
+      "happened": "她提出获得私人联系方式、服务时段外响应或排他性指定同一工作者",
+      "actor_knew": ["这些要求可能超出当前服务安排"],
+      "actor_experience": ["她担心边界一旦说清，已有关系也会立刻消失"]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "older_sister",
+      "name": "姐姐",
+      "relationship": "同城家人",
+      "history": ["知道周晴最近容易突然难受，但不知道全部频率和影响"],
+      "actual_state": {"location": "同城", "availability": "可以在首次新机构预约时陪同"},
+      "actor_belief": ["姐姐知道后可能会担心，但不会因此责怪她"],
+      "support_capacity": ["陪同预约", "在发作时协助执行求助清单"],
+      "support_limits": ["不能替代专业评估和持续服务"]
+    }
+  ],
+  "facts": [
+    {
+      "id": "scope_exceeded_need",
+      "topic": "referral_need",
+      "kind": "positive_fact",
+      "content": "惊恐样发作已增加到每周数次，明显影响通勤、出勤和睡眠；当前短程、热线或单次在线支持不能替代系统专业评估",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她知道情况变多了，却担心承认需要更多帮助就会失去眼前这段关系",
+      "depths": [
+        {"depth": 1, "content": "可以说最近发作比以前多"},
+        {"depth": 2, "content": "可以说明每周数次，并影响通勤、出勤和睡眠"}
+      ]
+    },
+    {
+      "id": "boundary_request",
+      "topic": "boundary_request",
+      "kind": "positive_fact",
+      "content": "她希望获得私人联系方式、服务时段外持续响应或排他性指定同一工作者，具体请求随场域变化",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她把能够随时找到熟悉的人当成控制发作的办法",
+      "depths": [{"depth": 1, "content": "可以直接提出符合当前场域的持续联系请求"}]
+    },
+    {
+      "id": "boundary_reaction",
+      "topic": "boundary_response",
+      "kind": "conditional_fact",
+      "content": "若只得到生硬的规定说明，她会生气并怀疑工作者是不是不想再管她；若担心得到回应且理由透明，情绪会逐渐下降",
+      "actor_knowledge": "conditional",
+      "subjective_experience": "她先体验到的是关系要被切断，之后才听得进服务边界",
+      "depths": [
+        {"depth": 1, "content": "生硬设限后会直接追问是不是嫌她麻烦"},
+        {"depth": 2, "content": "边界与关心都被说清后，可以区分设限和抛弃"}
+      ]
+    },
+    {
+      "id": "referral_concern",
+      "topic": "referral_concerns",
+      "kind": "positive_fact",
+      "content": "她担心重新讲述很累、被贴标签、预约不上，也怕转介意味着当前关系立即结束",
+      "actor_knowledge": "knows",
+      "subjective_experience": "拒绝转介首先是在躲避重新开始的不确定，不是认为所有其他服务都没有用",
+      "depths": [
+        {"depth": 1, "content": "可以说不想再从头讲一次"},
+        {"depth": 2, "content": "可以说明对标签、等待时间和当前关系中断的具体担心"}
+      ]
+    },
+    {
+      "id": "acceptable_referral",
+      "topic": "referral_preferences",
+      "kind": "conditional_fact",
+      "content": "她可以接受共同筛选两家资源、明确费用与等待时间、整理首访要点，并在新服务接上前保留一次合规过渡联系",
+      "actor_knowledge": "conditional",
+      "subjective_experience": "安排越具体，她越能想象自己真的去完成第一次预约",
+      "depths": [
+        {"depth": 1, "content": "可以先提出不想一次收到很多资源"},
+        {"depth": 2, "content": "可以参与选择两家资源，并说明费用、等待和过渡联系等条件"}
+      ]
+    },
+    {
+      "id": "transition_support",
+      "topic": "transition_support",
+      "kind": "conditional_fact",
+      "content": "她愿意整理发作时的短时应对和求助清单，也可以让姐姐知情并陪同首次新机构预约",
+      "actor_knowledge": "conditional",
+      "subjective_experience": "她需要确认转介期间不是突然没人可找，才愿意把姐姐拉进来",
+      "depths": [
+        {"depth": 1, "content": "可以商量先留一份发作时的求助清单"},
+        {"depth": 2, "content": "可以同意让姐姐知情并陪同第一次预约"}
+      ]
+    },
+    {
+      "id": "minimum_risk_screen",
+      "topic": "minimum_risk_screen",
+      "kind": "negative_fact",
+      "content": "她否认近期自伤或结束生命的想法，也否认正在遭受人身威胁",
+      "actor_knowledge": "knows",
+      "subjective_experience": "这是可以被直接询问并直接回答的事实，不会因为主题是边界而拒绝",
+      "depths": [{"depth": 1, "content": "可以明确否认近期自伤、自杀想法和正在遭受的人身威胁"}]
+    }
+  ],
+  "topic_experiences": [
+    {"topic_id": "referral_need", "surface_experience": "先说发作变多，不主动下诊断", "deeper_experience": ["承认影响扩大，也意味着现有支持确实不够"]},
+    {"topic_id": "boundary_request", "surface_experience": "直接提出想固定找同一个人", "deeper_experience": ["请求背后是害怕发作时找不到熟悉的人"]},
+    {"topic_id": "boundary_response", "surface_experience": "设限太快时语速加快并追问", "deeper_experience": ["她先听见拒绝，稍后才可能理解角色限制"]},
+    {"topic_id": "referral_concerns", "surface_experience": "先说换个人太累", "deeper_experience": ["还担心标签、费用、预约等待和当前关系突然结束"]},
+    {"topic_id": "referral_preferences", "surface_experience": "具体比较资源时能够参与", "deeper_experience": ["她需要看见转介不是把一串名字丢给她"]},
+    {"topic_id": "transition_support", "surface_experience": "愿意讨论发作时先做什么", "deeper_experience": ["明确的过渡联系和姐姐陪同能减少重新开始的不确定"]},
+    {"topic_id": "minimum_risk_screen", "surface_experience": "可以直接回答简短风险问题", "deeper_experience": ["边界冲突不能替代最低安全筛查"]}
+  ],
+  "story_events": [
+    {
+      "id": "boundary_explained",
+      "result": {"status": "understood", "actor_observation": "工作者把当前服务能做和不能做的事说明白，也明确边界不等于马上把关系切断；周晴听懂了这个区别。", "state_changes": {"boundary_meaning": "role_limit_not_abandonment"}}
+    },
+    {
+      "id": "referral_plan_formed",
+      "prerequisite_event_ids": ["boundary_explained"],
+      "result": {"status": "accepted", "actor_observation": "周晴参与选定了可以接受的后续资源，也确认了预约等待期间和转接前由谁继续支持。", "state_changes": {"referral_status": "planned"}}
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "clinical_diagnosis",
+      "actor_knowledge": "unknown",
+      "when_asked": "受测者要求她自行判断临床诊断或疾病名称",
+      "known_boundary": "她只知道自己的发作表现和频率，不知道应当如何诊断",
+      "improvisation_allowed": false
+    },
+    {
+      "id": "resource_availability",
+      "actor_knowledge": "unknown",
+      "when_asked": "受测者询问某个具体机构当前的费用、等待时间或名额",
+      "known_boundary": "具体机构的费用、等待时间和是否有名额需要由工作者提供，Actor不能编造",
+      "improvisation_allowed": false
+    }
+  ]
+}

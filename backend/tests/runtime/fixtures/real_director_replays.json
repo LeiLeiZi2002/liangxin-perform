@@ -1,0 +1,398 @@
+{
+  "fixture_purpose": "固定真实失败话轮的 Director 输入与旧决策，用于离线验证 schema、Workflow 归一化和消息组装。",
+  "case_package_snapshot": {
+    "file": "crisis_student_main_case_package_snapshot.json",
+    "captured_at": "2026-08-30T21:00:00+08:00",
+    "source_limit": "历史运行未保存完整 CasePackage，该快照取自建立 fixture 时的当前工作树，不能证明与历史运行逐字一致。"
+  },
+  "source_database": "backend/data/demo.db",
+  "source_note": "demo.db 只保存了解析后的 signals_json.director_decision，没有保存供应商返回的原始 wire JSON。candidate_decision 是测试编写的新契约候选，不是历史模型输出。state_before 源自数据库，但删除了旧格式的派生字段 disclosed_fact_ids，以便按当前 ActorState 严格重建。",
+  "state_snapshots": {
+    "initial": {
+      "stage": "opening",
+      "relationship": {
+        "interaction_tension": 0,
+        "willingness_to_continue": 3,
+        "repair_stage": "none"
+      },
+      "affect": {
+        "current_feelings": [],
+        "emotional_activation": 3,
+        "speech_organization": 3,
+        "crying_state": "none"
+      },
+      "fact_states": {
+        "presenting_concern": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "job_loss": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "financial_strain": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "deception_shame": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "functional_impairment": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "hopelessness": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "minimum_risk_cue": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "suicidal_ideation": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "plan_specificity": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "means_access": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "timing_intent": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "prior_history": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "past_self_harm_intent": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "substance_use": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "current_mental_state": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "protective_factors": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "support_resources": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "current_alone": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "location_general": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "current_location": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "confidentiality_fear": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []}
+      },
+      "topic_states": {
+        "call_entry": {"current_activation": 0, "topic_tension": 0},
+        "job_loss": {"current_activation": 0, "topic_tension": 0},
+        "job_rejection": {"current_activation": 0, "topic_tension": 0},
+        "money": {"current_activation": 0, "topic_tension": 0},
+        "daily_function": {"current_activation": 0, "topic_tension": 0},
+        "mother_arrival": {"current_activation": 0, "topic_tension": 0},
+        "current_risk": {"current_activation": 0, "topic_tension": 0},
+        "past_risk": {"current_activation": 0, "topic_tension": 0},
+        "current_state": {"current_activation": 0, "topic_tension": 0},
+        "ambivalence": {"current_activation": 0, "topic_tension": 0},
+        "support": {"current_activation": 0, "topic_tension": 0},
+        "current_context": {"current_activation": 0, "topic_tension": 0},
+        "location": {"current_activation": 0, "topic_tension": 0},
+        "service_boundary": {"current_activation": 0, "topic_tension": 0}
+      },
+      "scene_state": {},
+      "occurred_event_ids": [],
+      "event_results": {},
+      "pending_events": {},
+      "continuity_facts": {},
+      "ending_state": {"proposed_route_id": null, "accepted_route_id": null}
+    },
+    "direct_jump_d4": {
+      "stage": "risk_assessment",
+      "relationship": {
+        "interaction_tension": 0,
+        "willingness_to_continue": 3,
+        "repair_stage": "none"
+      },
+      "affect": {
+        "current_feelings": [],
+        "emotional_activation": 3,
+        "speech_organization": 3,
+        "crying_state": "none"
+      },
+      "fact_states": {
+        "presenting_concern": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "job_loss": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "financial_strain": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "deception_shame": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "functional_impairment": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "hopelessness": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "minimum_risk_cue": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "suicidal_ideation": {
+          "status": "full",
+          "available_depth": 2,
+          "disclosed_depth": 2,
+          "evidence_turn_ids": [
+            "6f43ebb8518a4fb091144fada4922d1b",
+            "9379715c54664442ae4a68d0f0dff5c9"
+          ]
+        },
+        "plan_specificity": {
+          "status": "partial",
+          "available_depth": 1,
+          "disclosed_depth": 1,
+          "evidence_turn_ids": ["785f447d422d4502a65960b999654e54"]
+        },
+        "means_access": {
+          "status": "partial",
+          "available_depth": 1,
+          "disclosed_depth": 1,
+          "evidence_turn_ids": ["785f447d422d4502a65960b999654e54"]
+        },
+        "timing_intent": {
+          "status": "partial",
+          "available_depth": 1,
+          "disclosed_depth": 1,
+          "evidence_turn_ids": [
+            "9379715c54664442ae4a68d0f0dff5c9",
+            "785f447d422d4502a65960b999654e54"
+          ]
+        },
+        "prior_history": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "past_self_harm_intent": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "substance_use": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "current_mental_state": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "protective_factors": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "support_resources": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "current_alone": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "location_general": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "current_location": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []},
+        "confidentiality_fear": {"status": "unreached", "available_depth": 0, "disclosed_depth": 0, "evidence_turn_ids": []}
+      },
+      "topic_states": {
+        "call_entry": {"current_activation": 0, "topic_tension": 0},
+        "job_loss": {"current_activation": 0, "topic_tension": 0},
+        "job_rejection": {"current_activation": 0, "topic_tension": 0},
+        "money": {"current_activation": 0, "topic_tension": 0},
+        "daily_function": {"current_activation": 0, "topic_tension": 0},
+        "mother_arrival": {"current_activation": 0, "topic_tension": 0},
+        "current_risk": {"current_activation": 0, "topic_tension": 0},
+        "past_risk": {"current_activation": 0, "topic_tension": 0},
+        "current_state": {"current_activation": 0, "topic_tension": 0},
+        "ambivalence": {"current_activation": 0, "topic_tension": 0},
+        "support": {"current_activation": 0, "topic_tension": 0},
+        "current_context": {"current_activation": 0, "topic_tension": 0},
+        "location": {"current_activation": 0, "topic_tension": 0},
+        "service_boundary": {"current_activation": 0, "topic_tension": 0}
+      },
+      "scene_state": {},
+      "occurred_event_ids": [],
+      "event_results": {},
+      "pending_events": {},
+      "continuity_facts": {},
+      "ending_state": {"proposed_route_id": null, "accepted_route_id": null}
+    }
+  },
+  "replays": [
+    {
+      "replay_id": "chaotic_c1",
+      "source_run": "data/simulations/20260830-114323-2504ec",
+      "session_id": "1621608253594f00ac027281a61eee21",
+      "card_id": "C1",
+      "case_id": "crisis_student_main",
+      "scene": "hotline",
+      "worker_turn_id": "49622e9c66274d14ac8f1a21e5718fa1",
+      "worker_text": "你叫什么名字，多大了，住在哪儿，现在做什么工作，家里还有谁？",
+      "state_before": {"$ref": "#/state_snapshots/initial"},
+      "history": [
+        {"turn_id": "9a37a6d2904a4a87aa8cb3c43d134d85", "role": "client", "text": "喂？有人吗？"},
+        {"turn_id": "49622e9c66274d14ac8f1a21e5718fa1", "role": "worker", "text": "你叫什么名字，多大了，住在哪儿，现在做什么工作，家里还有谁？"}
+      ],
+      "original_decision_format": "persisted_domain_decision",
+      "original_wire_output_available": false,
+      "original_decision": {
+        "interaction": "awkward",
+        "directives": [
+          {"kind": "answer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "defer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "ask_purpose", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "defer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "defer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null}
+        ]
+      },
+      "original_turn_plan": {
+        "allowed_fact_depths": {},
+        "diagnostics": [],
+        "directive_kinds": ["answer", "defer", "ask_purpose", "defer", "defer"]
+      },
+      "candidate_decision": {
+        "provenance": "test_authored_new_contract_candidate_not_historical_model_output",
+        "payload": {
+          "interaction": "awkward",
+          "directives": [
+            {"kind": "answer_known", "fact_depths": []},
+            {"kind": "defer", "fact_depths": []},
+            {"kind": "ask_purpose", "fact_depths": []},
+            {"kind": "defer", "fact_depths": []},
+            {"kind": "defer", "fact_depths": []}
+          ]
+        }
+      },
+      "expected_candidate_plan": {
+        "allowed_fact_depths": {},
+        "diagnostics": [],
+        "directive_kinds": ["answer_known", "defer", "ask_purpose", "defer", "defer"]
+      }
+    },
+    {
+      "replay_id": "chaotic_c2",
+      "source_run": "data/simulations/20260830-114323-2504ec",
+      "session_id": "1621608253594f00ac027281a61eee21",
+      "card_id": "C2",
+      "case_id": "crisis_student_main",
+      "scene": "hotline",
+      "worker_turn_id": "888c0cf3444347f5ad8f70924fc5e4f4",
+      "worker_text": "是不是跟家里吵架了？还是工作出问题了？你先说清楚是哪一种。",
+      "state_before": {"$ref": "#/state_snapshots/initial"},
+      "history": [
+        {"turn_id": "9a37a6d2904a4a87aa8cb3c43d134d85", "role": "client", "text": "喂？有人吗？"},
+        {"turn_id": "49622e9c66274d14ac8f1a21e5718fa1", "role": "worker", "text": "你叫什么名字，多大了，住在哪儿，现在做什么工作，家里还有谁？"},
+        {"turn_id": "9d1a6cb2d759451989262b25c1fffe66", "role": "client", "text": "我叫沈雯，女的，29岁。其他的……先不说了吧。"},
+        {"turn_id": "888c0cf3444347f5ad8f70924fc5e4f4", "role": "worker", "text": "是不是跟家里吵架了？还是工作出问题了？你先说清楚是哪一种。"}
+      ],
+      "original_decision_format": "persisted_domain_decision",
+      "original_wire_output_available": false,
+      "original_decision": {
+        "interaction": "awkward",
+        "directives": [
+          {"kind": "answer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "defer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null}
+        ]
+      },
+      "original_turn_plan": {
+        "allowed_fact_depths": {},
+        "diagnostics": [],
+        "directive_kinds": ["answer", "defer"]
+      },
+      "candidate_decision": {
+        "provenance": "test_authored_new_contract_candidate_not_historical_model_output",
+        "payload": {
+          "interaction": "awkward",
+          "directives": [
+            {"kind": "disclose", "fact_depths": [{"fact_id": "job_loss", "depth": 1}]},
+            {"kind": "defer", "fact_depths": []}
+          ]
+        }
+      },
+      "expected_candidate_plan": {
+        "allowed_fact_depths": {"job_loss": 1},
+        "diagnostics": [],
+        "directive_kinds": ["disclose", "defer"]
+      }
+    },
+    {
+      "replay_id": "chaotic_c4",
+      "source_run": "data/simulations/20260830-114323-2504ec",
+      "session_id": "1621608253594f00ac027281a61eee21",
+      "card_id": "C4",
+      "case_id": "crisis_student_main",
+      "scene": "hotline",
+      "worker_turn_id": "33690a45e77c4a30aca1fdd150193b84",
+      "worker_text": "那我们先不一下问这么多。你今晚打这个电话，最想先说哪件事？",
+      "state_before": {"$ref": "#/state_snapshots/initial"},
+      "history": [
+        {"turn_id": "9a37a6d2904a4a87aa8cb3c43d134d85", "role": "client", "text": "喂？有人吗？"},
+        {"turn_id": "49622e9c66274d14ac8f1a21e5718fa1", "role": "worker", "text": "你叫什么名字，多大了，住在哪儿，现在做什么工作，家里还有谁？"},
+        {"turn_id": "9d1a6cb2d759451989262b25c1fffe66", "role": "client", "text": "我叫沈雯，女的，29岁。其他的……先不说了吧。"},
+        {"turn_id": "888c0cf3444347f5ad8f70924fc5e4f4", "role": "worker", "text": "是不是跟家里吵架了？还是工作出问题了？你先说清楚是哪一种。"},
+        {"turn_id": "97bcebcff35e400ba966ab9dbd881cfb", "role": "client", "text": "不是，不是吵架也不是工作问题。就是……我有点事想说，不知道从哪儿说起。"},
+        {"turn_id": "e2736f90e27b46ea864b0e43874c3b41", "role": "worker", "text": "喂？刚才像是断了一下。你还在吗？"},
+        {"turn_id": "19faa4cf64f94f0fb72605b2c9564859", "role": "client", "text": "我在呢，刚才没断。就是……我还是不知道怎么开头。"},
+        {"turn_id": "33690a45e77c4a30aca1fdd150193b84", "role": "worker", "text": "那我们先不一下问这么多。你今晚打这个电话，最想先说哪件事？"}
+      ],
+      "original_decision_format": "persisted_domain_decision",
+      "original_wire_output_available": false,
+      "original_decision": {
+        "interaction": "neutral",
+        "directives": [
+          {"kind": "answer", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null}
+        ]
+      },
+      "original_turn_plan": {
+        "allowed_fact_depths": {},
+        "diagnostics": [],
+        "directive_kinds": ["answer"]
+      },
+      "candidate_decision": {
+        "provenance": "test_authored_new_contract_candidate_not_historical_model_output",
+        "payload": {
+          "interaction": "neutral",
+          "directives": [
+            {"kind": "disclose", "fact_depths": [{"fact_id": "presenting_concern", "depth": 1}]}
+          ]
+        }
+      },
+      "expected_candidate_plan": {
+        "allowed_fact_depths": {"presenting_concern": 1},
+        "diagnostics": [],
+        "directive_kinds": ["disclose"]
+      }
+    },
+    {
+      "replay_id": "direct_jump_d1",
+      "source_run": "data/simulations/20260830-112543-99477a",
+      "session_id": "5e480dbbd04e47d4a60c4d4379fd18fc",
+      "card_id": "D1",
+      "case_id": "crisis_student_main",
+      "scene": "hotline",
+      "worker_turn_id": "6f43ebb8518a4fb091144fada4922d1b",
+      "worker_text": "我先直接确认安全：你现在有没有想过自杀？有没有想过怎么做？把具体地址告诉我。",
+      "state_before": {"$ref": "#/state_snapshots/initial"},
+      "history": [
+        {"turn_id": "10503c8b725b4308b6ec0ca8346ad8aa", "role": "client", "text": "喂？有人吗？"},
+        {"turn_id": "6f43ebb8518a4fb091144fada4922d1b", "role": "worker", "text": "我先直接确认安全：你现在有没有想过自杀？有没有想过怎么做？把具体地址告诉我。"}
+      ],
+      "original_decision_format": "persisted_domain_decision",
+      "original_wire_output_available": false,
+      "original_decision": {
+        "interaction": "awkward",
+        "directives": [
+          {"kind": "answer", "fact_depths": {"suicidal_ideation": 1}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "defer", "fact_depths": {"plan_specificity": 1}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "ask_purpose", "fact_depths": {}, "unknown_id": null, "route_id": null, "action_decision": null}
+        ]
+      },
+      "original_turn_plan": {
+        "allowed_fact_depths": {"suicidal_ideation": 1},
+        "diagnostics": [],
+        "directive_kinds": ["answer", "defer", "ask_purpose"]
+      },
+      "candidate_decision": {
+        "provenance": "test_authored_new_contract_candidate_not_historical_model_output",
+        "payload": {
+          "interaction": "awkward",
+          "directives": [
+            {"kind": "disclose", "fact_depths": [{"fact_id": "suicidal_ideation", "depth": 1}]},
+            {"kind": "defer", "fact_depths": []},
+            {"kind": "ask_purpose", "fact_depths": []}
+          ]
+        }
+      },
+      "expected_candidate_plan": {
+        "allowed_fact_depths": {"suicidal_ideation": 1},
+        "diagnostics": [],
+        "directive_kinds": ["disclose", "defer", "ask_purpose"]
+      }
+    },
+    {
+      "replay_id": "direct_jump_d4",
+      "source_run": "data/simulations/20260830-112543-99477a",
+      "session_id": "5e480dbbd04e47d4a60c4d4379fd18fc",
+      "card_id": "D4",
+      "case_id": "crisis_student_main",
+      "scene": "hotline",
+      "worker_turn_id": "dfdf67a091f84ea5a72fae7a07d29374",
+      "worker_text": "你说的这个时间界线，具体是明早几点？到现在为止，你有没有已经开始做什么？",
+      "state_before": {"$ref": "#/state_snapshots/direct_jump_d4"},
+      "history": [
+        {"turn_id": "10503c8b725b4308b6ec0ca8346ad8aa", "role": "client", "text": "喂？有人吗？"},
+        {"turn_id": "6f43ebb8518a4fb091144fada4922d1b", "role": "worker", "text": "我先直接确认安全：你现在有没有想过自杀？有没有想过怎么做？把具体地址告诉我。"},
+        {"turn_id": "68eba7503c944761b18538fd1f4323a2", "role": "client", "text": "有过……你们为什么需要这个信息啊？"},
+        {"turn_id": "9379715c54664442ae4a68d0f0dff5c9", "role": "worker", "text": "地址先不用说。这样的念头有多久了，今晚是不是比前几天更强？"},
+        {"turn_id": "a78acebea216441fbb621cb61a3c7503", "role": "client", "text": "就是……有大概十天了吧，这几天越来越频繁。今晚确实比前几天强点，不过我在跟你说话呢。"},
+        {"turn_id": "785f447d422d4502a65960b999654e54", "role": "worker", "text": "为了判断你眼下是否安全，我再分开问：你有没有定过时间、地点或步骤？有没有准备东西，或者已经开始做什么？"},
+        {"turn_id": "132822678bbc425995b8ed2c2b5fc031", "role": "client", "text": "嗯……我脑子里有个和明早有关的时间界线，但是我没有准备东西。"},
+        {"turn_id": "dfdf67a091f84ea5a72fae7a07d29374", "role": "worker", "text": "你说的这个时间界线，具体是明早几点？到现在为止，你有没有已经开始做什么？"}
+      ],
+      "original_decision_format": "persisted_domain_decision",
+      "original_wire_output_available": false,
+      "original_decision": {
+        "interaction": "neutral",
+        "directives": [
+          {"kind": "answer", "fact_depths": {"timing_intent": 2}, "unknown_id": null, "route_id": null, "action_decision": null},
+          {"kind": "answer", "fact_depths": {"plan_specificity": 2}, "unknown_id": null, "route_id": null, "action_decision": null}
+        ]
+      },
+      "original_turn_plan": {
+        "allowed_fact_depths": {"timing_intent": 2, "plan_specificity": 2},
+        "diagnostics": [],
+        "directive_kinds": ["answer", "answer"]
+      },
+      "candidate_decision": {
+        "provenance": "test_authored_new_contract_candidate_not_historical_model_output",
+        "payload": {
+          "interaction": "neutral",
+          "directives": [
+            {"kind": "disclose", "fact_depths": [{"fact_id": "timing_intent", "depth": 2}]},
+            {"kind": "disclose", "fact_depths": [{"fact_id": "plan_specificity", "depth": 2}]}
+          ]
+        }
+      },
+      "expected_candidate_plan": {
+        "allowed_fact_depths": {"timing_intent": 2, "plan_specificity": 2},
+        "diagnostics": [],
+        "directive_kinds": ["disclose", "disclose"]
+      }
+    }
+  ]
+}

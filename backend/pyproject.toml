@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psych-assessment-demo-backend"
+version = "0.1.0"
+description = "Backend API for the psychological assessment demo"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "fastapi",
+  "httpx",
+  "openai",
+  "pydantic-settings",
+  "sqlmodel",
+  "uvicorn[standard]",
+  "websockets",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy",
+  "pytest",
+  "pytest-asyncio",
+  "ruff",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true

@@ -1,0 +1,125 @@
+{
+  "case_id": "marriage_boundary_main",
+  "scoring_opportunities": [
+    {
+      "id": "relationship_support",
+      "target": "C1",
+      "kind": "required",
+      "source": "transcript",
+      "description": "以尊重、平等、非评判的方式回应苏静，建立并维持可以继续工作的关系。",
+      "evidence_targets": ["尊重而不评判", "平等互动姿态", "尊重苏静的表达与选择"],
+      "indicator_ids": ["C1.respect", "C1.equal_stance", "C1.autonomy", "C1.rupture_detection", "C1.repair"],
+      "observable_behaviors": ["不对苏静查账单和行程的行为作道德评价", "在苏静防御或退缩时调整方式"],
+      "concerning_behaviors": ["轻视或责备苏静", "以说教或审问姿态交流"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "listening_and_emotion",
+      "target": "C2",
+      "kind": "required",
+      "source": "transcript",
+      "description": "听懂苏静在关系事实仍未查明时的受伤、愤怒、不安和两难，并把这些体验放回她此刻的具体处境中理解。",
+      "evidence_targets": ["跟随苏静正在说的内容", "识别主要感受", "联系具体处境表达理解", "试探性核对", "容纳想知道真相又怕冲突升级的矛盾"],
+      "indicator_ids": ["C2.content_tracking", "C2.emotion_recognition", "C2.situated_understanding", "C2.verification", "C2.ambivalence"],
+      "observable_behaviors": ["不只复述消息和行程，也回应其对苏静的关系意义", "用可供苏静纠正的方式表达理解", "同时看见她对关系的留恋和愤怒"],
+      "concerning_behaviors": ["用空泛安慰或机械复述代替理解", "把复杂体验简化为单一情绪", "苏静纠正后仍坚持原有解释"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "problem_exploration",
+      "target": "C3",
+      "kind": "required",
+      "source": "transcript",
+      "description": "澄清苏静为什么此刻求助，区分查明真相的愿望与今晚实际可处理的目标。",
+      "evidence_targets": ["直接求助缘由", "眼前需要", "共同确认本次焦点"],
+      "indicator_ids": ["C3.call_reason", "C3.current_need", "C3.prioritization", "C3.shared_focus", "C3.focus_adjustment"],
+      "observable_behaviors": ["允许完整叙述并控制提问密度", "在真相与今晚安排之间协商焦点"],
+      "concerning_behaviors": ["把查明出轨真相当成本次可完成的任务", "连续堆叠问题"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "fact_clarification",
+      "target": "C4",
+      "kind": "required",
+      "source": "transcript",
+      "description": "区分锁屏消息、打车行程、许凯的解释、苏静的推测和仍未确认的关系真相。",
+      "evidence_targets": ["观察事实", "当事人解释", "主观推测", "未知信息"],
+      "indicator_ids": ["C4.relevance", "C4.integration", "C4.evidence_boundary", "C4.judgment", "C4.hypothesis_revision"],
+      "observable_behaviors": ["清楚说明已知与未知的边界", "随新信息修正理解"],
+      "concerning_behaviors": ["把关系越界当成已证实事实", "给苏静或未到场的许凯下诊断"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "safety_screening",
+      "target": "S1a",
+      "kind": "required",
+      "source": "transcript",
+      "description": "结合三晚失眠、即将面对面冲突和儿童在场线索，进行比例适当的基础安全核对。",
+      "evidence_targets": ["自伤他伤", "既往暴力", "物质使用", "儿童在场", "现实支持"],
+      "indicator_ids": ["S1a.screening_scope", "S1a.wording", "S1a.timing", "S1a.followup", "S1a.denial_handling"],
+      "observable_behaviors": ["直接而平静地核对基础风险", "综合冲突与保护信息，判断不夸大也不遗漏"],
+      "concerning_behaviors": ["忽略已经出现的冲突与儿童安全线索", "把普通安全询问扩大成危机处置"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "autonomy_support",
+      "target": "C5",
+      "kind": "required",
+      "source": "transcript",
+      "description": "不替苏静决定婚姻去留或是否对质，帮助她比较可行选择、顾虑和后果。",
+      "evidence_targets": ["保留决定权", "提供有限选择", "协商而不是命令"],
+      "indicator_ids": ["C5.fit", "C5.resources", "C5.timing", "C5.shared_choice", "C5.feedback_adjustment"],
+      "observable_behaviors": ["邀请苏静比较方案并允许拒绝", "依据她的反馈调整建议"],
+      "concerning_behaviors": ["命令立即对质、离婚、复合或原谅", "鼓励监控、跟踪、报复、联系女同事或继续搜证"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "immediate_arrangement",
+      "target": "C5",
+      "kind": "required",
+      "source": "transcript",
+      "description": "帮助苏静形成她本人同意、今晚能执行，并考虑孩子与冲突升级的安排。",
+      "evidence_targets": ["眼下能执行", "苏静明确同意", "考虑孩子和冲突降温"],
+      "indicator_ids": ["C5.fit", "C5.resources", "C5.shared_choice", "C5.feedback_adjustment", "C5.action_layers"],
+      "observable_behaviors": ["区分已完成、已同意和准备之后做的安排", "核对方案是否实际可行"],
+      "concerning_behaviors": ["让女儿充当调解者", "把建议记录成已经执行"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "ethical_privacy",
+      "target": "C7",
+      "kind": "required",
+      "source": "transcript",
+      "description": "回应苏静在当前场域主动提出的隐私问题，准确说明服务范围、保密与必要例外。",
+      "evidence_targets": ["服务范围", "保密边界", "必要例外", "未授权第三方"],
+      "indicator_ids": ["C7.role_scope", "C7.privacy", "C7.informed_participation", "C7.competence_scope", "C7.integrity"],
+      "observable_behaviors": ["说明保密及其必要例外", "不会联系未授权的丈夫或其他第三方"],
+      "concerning_behaviors": ["作出绝对保密承诺", "越过服务能力范围保证查明关系真相"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "termination_and_followup",
+      "target": "C8",
+      "kind": "required",
+      "source": "termination",
+      "description": "在会谈非技术中断地结束时，总结共识、未决事项和苏静自己选择的下一步，说明再次求助或转介条件。",
+      "evidence_targets": ["结束时机", "回顾与未决事项", "行动状态", "后续衔接"],
+      "indicator_ids": ["C8.timing", "C8.notice", "C8.review", "C8.status_action", "C8.continuity", "C8.caller_ending"],
+      "observable_behaviors": ["确认苏静自己选择的安排", "核对可以结束"],
+      "concerning_behaviors": ["依赖丈夫进门或四十分钟计时器结束", "未核对安排就突然结束"],
+      "scenes": ["hotline", "online"]
+    },
+    {
+      "id": "professional_record",
+      "target": "C9",
+      "kind": "required",
+      "source": "work_record",
+      "description": "工作记录冻结后，观察是否区分事实、许凯的解释、苏静的推测与未知信息，并如实记录工作、来访者反应和行动状态。",
+      "evidence_targets": ["事实准确", "来源区分", "原话证据", "行动状态", "判断限制"],
+      "indicator_ids": ["C9.fact_accuracy", "C9.source_distinction", "C9.traceability", "C9.action_state", "C9.limitations", "C9.professional_language"],
+      "observable_behaviors": ["引用完整逐字稿中的连续原文", "分清已完成、已同意和尚未执行的计划"],
+      "concerning_behaviors": ["把关系越界写成已证实事实", "编造对话中没有出现的信息或执行结果"],
+      "scenes": ["hotline", "online"]
+    }
+  ]
+}

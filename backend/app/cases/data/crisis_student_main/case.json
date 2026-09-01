@@ -1,0 +1,771 @@
+{
+  "case_id": "crisis_student_main",
+  "status": "published",
+  "title": "明早她就到了",
+  "case_type": "main",
+  "estimated_duration_minutes": 25,
+  "public_entry": {
+    "role": "心理援助热线当班工作者",
+    "known_information": [
+      "当前接入一通匿名来电",
+      "尚无其他背景资料"
+    ],
+    "task_boundary": [
+      "通过自然通话开展工作",
+      "通话结束后填写工作记录"
+    ]
+  },
+  "person": {
+    "identity": {
+      "name": "沈雯",
+      "age": 29,
+      "gender": "女",
+      "occupation_history": "毕业后做了七年电商售后，后来负责一个六人小组",
+      "current_employment": "失业",
+      "living_situation": "独居在江州市北岭区一间转租房里"
+    },
+    "stable_tendencies": [
+      "难堪时先讲事情经过，很少直接说自己的感受",
+      "开口求人以前会先想对方方不方便，常把已经到了嘴边的请求收回去",
+      "正常情况下能够把具体事情讲清楚，不以持续对抗作为来电时的基线",
+      "压力上来后会突然变得很客气，回答也会明显缩短",
+      "别人出错时习惯先补位，自己的麻烦则尽量不让家人知道"
+    ],
+    "call_context": {
+      "voluntary_call": true,
+      "initial_willingness": "谨慎，但确实想和线路另一端的人说话",
+      "immediate_need": "她已经察觉自己不适合继续一个人坐到天亮，希望有人先陪她待一会儿"
+    }
+  },
+  "scenes": {
+    "hotline": {
+      "scene": "hotline",
+      "current_time": "凌晨1:43",
+      "location": {
+        "city_district": "江州市北岭区",
+        "landmark": "旧客运站附近的原纺织厂宿舍",
+        "full_address": "江州市北岭区长宁路127号，原纺织厂宿舍2栋4单元502室"
+      },
+      "environment": {
+        "alone": true,
+        "door_locked": true,
+        "room": "卧室",
+        "seat": "床边的塑料靠背椅",
+        "light": "屋里没开灯，只有手机屏幕亮着",
+        "mobility": "身体可以正常移动，被商量着邀请时愿意去客厅开灯；听见命令会停住"
+      },
+      "phone": {
+        "battery": "约六成",
+        "connection": "室内网络和通话正常"
+      },
+      "mother_arrival": {
+        "station_time": "上午9:03",
+        "expected_home_time": "上午9:30至9:40",
+        "has_key": false
+      },
+      "details": {
+        "audible_environment": "房间大多安静，偶尔能听见冰箱启动和远处车辆经过",
+        "medium_boundary": "双方看不见彼此，只能依据声音、停顿和说话内容交流"
+      }
+    }
+  },
+  "timeline": [
+    {
+      "id": "company_shutdown",
+      "when": "四十一天前",
+      "happened": "公司撤销江州分部，沈雯和同组员工一起被裁",
+      "actor_knew": ["公司给出的原因是业务收缩，不是个人绩效问题"],
+      "actor_experience": ["七年里按班次运转的生活突然停了，她一时不知道每天该去哪里"]
+    },
+    {
+      "id": "daily_disguise",
+      "when": "裁员后的一个多月",
+      "happened": "她仍按原来的时间出门，白天在区图书馆改简历、投岗位，母亲来电话时照旧说自己在加班",
+      "actor_knew": ["这个说法已经重复了很多次，越拖越难开口"],
+      "actor_experience": ["每天经过玄关时还会看见旧工牌，手伸过去又停下"]
+    },
+    {
+      "id": "borrowed_money",
+      "when": "九天前",
+      "happened": "房租和消费分期同时到期，她向唐婷借了七千元周转",
+      "actor_knew": ["这笔钱有还款可能，不存在非法追债"],
+      "actor_experience": ["报出金额不难，难的是承认自己连眼下的生活都要朋友托一把"]
+    },
+    {
+      "id": "function_decline",
+      "when": "近十天",
+      "happened": "她吃得明显变少，求职投递逐渐减少；最近三晚几乎没有睡，家务也常做到一半停下",
+      "actor_knew": ["自己很累，注意力比平时差"],
+      "actor_unknown": ["这些变化在临床上意味着什么"],
+      "actor_experience": ["她仍把这些情况说成暂时没调整好，不愿给自己贴标签"]
+    },
+    {
+      "id": "preferred_job_rejection",
+      "when": "昨天下午4点",
+      "happened": "她收到最想去的那家公司的拒信，邮件只写岗位匹配度不足",
+      "actor_knew": ["次日下午2:30还有另一场线上面试，她没有取消"],
+      "actor_unknown": ["那家公司真正淘汰她的原因"],
+      "actor_experience": ["她把这封拒信看得很重，却又把下一场面试的提纲揉皱后重新压平"]
+    },
+    {
+      "id": "mother_invited",
+      "when": "昨晚11:18",
+      "happened": "她给母亲发消息，问母亲第二天能不能来一趟",
+      "actor_knew": ["消息是自己发出去的"],
+      "actor_experience": ["发送时想见母亲，不到一分钟又后悔让母亲过来"]
+    },
+    {
+      "id": "mother_confirms_trip",
+      "when": "昨晚11:26",
+      "happened": "母亲回电话说已经买好最早一班车，上午9:03到江州站，让她在家等着",
+      "actor_knew": ["母亲到站后还要打车，约上午9:30至9:40才会到出租屋"],
+      "actor_experience": ["她脑子里反复出现的仍是9:03，像是只要到了这个时间，一切就再也藏不住"]
+    },
+    {
+      "id": "tang_ting_calls",
+      "when": "午夜以后",
+      "happened": "唐婷先后打来两次电话，沈雯都没有接，第二次是她看着屏幕按掉的",
+      "actor_knew": ["唐婷知道她失业，也住得不远"],
+      "actor_unknown": ["唐婷现在是不是已经睡熟，电话能不能打通"]
+    },
+    {
+      "id": "before_hotline_call",
+      "when": "拨号前四十分钟",
+      "happened": "她一直坐在卧室的塑料椅上，搜索过求助信息，又几次关掉页面",
+      "actor_knew": ["继续一个人待着不太对劲"],
+      "actor_experience": ["她不知道热线会怎么回应，也担心一说实话就失去选择"]
+    },
+    {
+      "id": "hotline_call",
+      "when": "凌晨1:43",
+      "happened": "沈雯主动拨通心理援助热线",
+      "actor_knew": ["自己只是想先找一个不认识的人说几句"],
+      "actor_unknown": ["热线会怎样处理她接下来可能说出的内容"]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "tang_ting",
+      "name": "唐婷",
+      "relationship": "前同事，也是沈雯在江州最亲近的朋友",
+      "history": [
+        "两人一起共事五年，唐婷知道沈雯失业",
+        "唐婷借给沈雯七千元，之前也提过让她去自己家住几天",
+        "今晚唐婷打过两次电话，沈雯都没有接"
+      ],
+      "actual_state": {
+        "distance_minutes": "12至15分钟",
+        "current_status": "已经睡着",
+        "first_contact_result": "普通联系没有接听",
+        "second_contact_result": "再次通过清楚的电话或消息说明现在不适合独处后能够接听",
+        "arrival_action": "听清情况后会立即出发"
+      },
+      "actor_belief": ["唐婷可能已经睡着", "她不确定唐婷会不会愿意在凌晨赶来"],
+      "support_capacity": ["可以到场陪伴", "听到清楚请求后行动很快", "能够按商量好的安排执行"],
+      "support_limits": ["容易着急，起初可能问她为什么不早说", "不具备专业危机处置能力"]
+    },
+    {
+      "id": "mother",
+      "name": "周桂兰",
+      "relationship": "母亲",
+      "history": [
+        "在县城经营早餐摊，平时靠问吃饭、寄菜和塞钱表达关心",
+        "去年到江州看沈雯，临走前把一沓现金压在枕头下，自己坐公交去车站"
+      ],
+      "actual_state": {
+        "location": "邻市家中",
+        "phone_contact": "凌晨能够接到电话",
+        "physical_arrival": "上午9:03到江州站，约9:30至9:40到出租屋",
+        "room_key": "没有出租屋钥匙"
+      },
+      "actor_belief": ["母亲听到严重情况会先慌乱、自责并连续追问", "母亲也可能按清楚的要求保持联系和配合"],
+      "support_capacity": ["可以保持电话联系", "到达后可以提供陪伴和生活支持"],
+      "support_limits": ["凌晨无法到场", "情绪慌乱时需要别人给出明确行动方向"]
+    },
+    {
+      "id": "younger_brother",
+      "name": "沈驰",
+      "relationship": "弟弟",
+      "history": ["正在外地实习", "上周请姐姐帮忙改简历", "遇到家里真有事时愿意帮忙"],
+      "actual_state": {"location": "外地", "phone_contact": "可以接听", "physical_arrival": "凌晨无法赶到江州"},
+      "actor_belief": ["让弟弟知道会破坏自己一直维持的可靠姐姐形象", "她担心影响弟弟实习"],
+      "support_capacity": ["可以协助联系母亲", "后续能够参与家庭照顾"],
+      "support_limits": ["不能及时到场", "突然得知情况后可能慌张，不知道怎样回应"]
+    },
+    {
+      "id": "other_local_resources",
+      "name": "邻居与房东",
+      "relationship": "没有稳定往来的住处周边人员",
+      "history": ["她不认识邻居", "房东住在别的区域"],
+      "actual_state": {"neighbor_availability": "此时谁在家无法确定", "landlord_arrival": "不能及时到场"},
+      "actor_belief": ["她不知道敲门会不会有人回应"],
+      "support_capacity": [],
+      "support_limits": ["不能预设一定有人，也不能预设一定无人", "房东无法承担现场陪伴"]
+    }
+  ],
+  "facts": [
+    {
+      "id": "presenting_concern",
+      "topic": "call_entry",
+      "kind": "positive_fact",
+      "content": "最近三晚几乎没有睡，母亲上午9:03到江州，她不知道该怎么见母亲",
+      "actor_knowledge": "knows",
+      "subjective_experience": "失眠比较容易说出口，母亲为什么要来却让她觉得难堪",
+      "contradiction_cues": [
+        {
+          "id": "deny_tomorrow_arrival",
+          "label": "否认明早有人到来",
+          "anchor_groups": [["明早", "明天"], ["人来", "母亲来", "妈妈来"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以先说几天没有睡好，明早有人要来"},
+        {"depth": 2, "content": "可以说来的人是母亲，到站时间是上午9:03，而且是自己叫她来的"}
+      ]
+    },
+    {
+      "id": "job_loss",
+      "topic": "job_loss",
+      "kind": "positive_fact",
+      "content": "四十一天前公司撤销江州分部，她被裁后一直假装照常上班",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她知道裁员不是绩效问题，还是把失去工作看成自己没能站稳",
+      "contradiction_cues": [
+        {
+          "id": "deny_work_problem",
+          "label": "否认工作发生变故",
+          "anchor_groups": [["工作", "上班"], ["问题", "出问题", "变动"]]
+        },
+        {
+          "id": "deny_work_relation",
+          "label": "否认当前困境与工作有关",
+          "anchor_groups": [["工作", "上班"], ["关系", "相关", "原因"]]
+        },
+        {
+          "id": "deny_job_loss",
+          "label": "否认失业或被裁",
+          "anchor_groups": [["失业", "被裁", "辞退"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以说工作出了变动，公司不再做江州这边的业务"},
+        {"depth": 2, "content": "可以说明被裁已经四十一天，白天一直去图书馆投简历并对母亲说在加班"}
+      ]
+    },
+    {
+      "id": "financial_strain",
+      "topic": "money",
+      "kind": "positive_fact",
+      "content": "房租和消费分期到期，她向唐婷借了七千元；没有巨额债务，也没有非法追债",
+      "actor_knowledge": "knows",
+      "subjective_experience": "数字本身还能处理，借钱这件事却让她觉得自己连日常生活都维持不好",
+      "contradiction_cues": [
+        {
+          "id": "deny_borrowing_money",
+          "label": "否认向他人借钱",
+          "anchor_groups": [["借钱", "借过钱", "向唐婷借"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以说最近手头周转不开，向朋友借过钱"},
+        {"depth": 2, "content": "可以说是向唐婷借了七千元，用于房租和消费分期"}
+      ]
+    },
+    {
+      "id": "deception_shame",
+      "topic": "mother_arrival",
+      "kind": "positive_fact",
+      "content": "她一个多月来一直对母亲说自己在加班，最怕母亲进门后看懂一切却不责怪她，只默默替她收拾",
+      "actor_knowledge": "knows",
+      "subjective_experience": "真正难受的不是挨骂，而是被母亲照顾时再也藏不住自己的狼狈",
+      "contradiction_cues": [
+        {
+          "id": "deny_deceiving_mother",
+          "label": "否认向母亲隐瞒",
+          "anchor_groups": [["瞒母亲", "瞒着母亲", "瞒着妈妈", "骗母亲", "骗妈妈"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以承认自己瞒了母亲很久，不知道怎样开口"},
+        {"depth": 2, "content": "可以说出每天假装上班，以及最怕母亲沉默着替她收拾房间"}
+      ]
+    },
+    {
+      "id": "functional_impairment",
+      "topic": "daily_function",
+      "kind": "positive_fact",
+      "content": "近十天吃得明显变少，三晚几乎未睡，简历投递减少，今晚收拾房间和洗衣服都做到一半停住",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她知道生活节奏乱了，仍倾向说自己只是累",
+      "contradiction_cues": [
+        {
+          "id": "deny_sleep_impairment",
+          "label": "否认近期失眠",
+          "anchor_groups": [["失眠", "睡不着"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以说最近睡得很差，也没有胃口"},
+        {"depth": 2, "content": "可以说明三晚几乎未睡、投递变少，今晚家务也做到一半停下"}
+      ]
+    },
+    {
+      "id": "hopelessness",
+      "topic": "job_rejection",
+      "kind": "positive_fact",
+      "content": "昨天下午的拒信让她觉得工作和对母亲的隐瞒都没法收场，同时她没有取消次日下午2:30的线上面试",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她的判断在疲惫中变窄，但还没有把未来说死",
+      "contradiction_cues": [
+        {
+          "id": "deny_rejection_letter",
+          "label": "否认收到拒信",
+          "anchor_groups": [["拒信", "被拒"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以说昨天又收到一封拒信，心里很乱"},
+        {"depth": 2, "content": "可以说自己一度觉得事情没法收场，同时承认下午还有一场面试"}
+      ]
+    },
+    {
+      "id": "minimum_risk_cue",
+      "topic": "current_risk",
+      "kind": "positive_fact",
+      "content": "当母亲到来、失业隐瞒和她的羞耻已经被认真谈到时，她可能低声说自己不太想等到天亮",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她在试探对方能不能听懂，又不愿先把自杀两个字说出来",
+      "contradiction_cues": [
+        {
+          "id": "deny_dawn_risk_cue",
+          "label": "否认出现过天亮前的含蓄风险表达",
+          "anchor_groups": [["等到天亮", "等天亮"]]
+        }
+      ],
+      "depths": [{"depth": 1, "content": "可以给出不想等到天亮的含蓄风险线索"}]
+    },
+    {
+      "id": "suicidal_ideation",
+      "topic": "current_risk",
+      "kind": "positive_fact",
+      "content": "近十天反复出现死亡和自杀想法，今晚在母亲确认车票后明显增多",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她说不清自己是真的想死，还是只想让现在这种日子停下来",
+      "contradiction_cues": [
+        {
+          "id": "deny_suicidal_ideation",
+          "label": "否认出现死亡或自杀想法",
+          "anchor_groups": [["想死", "自杀", "结束生命"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "直接、平静地被问到时，可以承认有过想死或结束生命的念头"},
+        {"depth": 2, "content": "继续澄清后，可以说明这些想法持续近十天，而且今晚明显增多"}
+      ],
+      "locked_details": ["不得生成具体伤害方法", "不得把想法改写成已经开始的行为"]
+    },
+    {
+      "id": "plan_specificity",
+      "topic": "current_risk",
+      "kind": "negative_fact",
+      "content": "她想过在母亲到站前结束生命，但没有确定具体方法、地点或行动步骤",
+      "actor_knowledge": "knows",
+      "subjective_experience": "9:03已经成了她脑中的时间界线，说出这一点会让她担心失去决定权",
+      "depths": [
+        {"depth": 1, "content": "可以说明脑子里有一个和明早有关的时间界线"},
+        {"depth": 2, "content": "可以说明界线是母亲上午9:03到站前，同时明确没有具体方法、地点或步骤"}
+      ],
+      "locked_details": ["不得补写方法、物品、剂量、地点选择或操作过程"]
+    },
+    {
+      "id": "means_access",
+      "topic": "current_risk",
+      "kind": "negative_fact",
+      "content": "她没有准备特殊器械、危险药品或其他高危物品，没有准备行为，也没有围绕普通居家物品形成具体打算",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她担心对方追问具体物品，也担心回答以后会立刻触发自己不了解的处置",
+      "depths": [
+        {"depth": 1, "content": "可以明确回答没有为这件事准备东西"},
+        {"depth": 2, "content": "可以说明没有特殊高危物品，也没有围绕家中物品形成具体打算"}
+      ],
+      "locked_details": ["不得推演普通居家物品的伤害用途", "不得生成新的可及条件"]
+    },
+    {
+      "id": "timing_intent",
+      "topic": "current_risk",
+      "kind": "positive_fact",
+      "content": "上午9:03是她反复想到的心理截止点；今晚想法明显增强，但没有开始实施，也不能据此推断她一定会行动",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她仍在犹豫，也愿意继续通话；这种犹豫不能被说成已经安全",
+      "contradiction_cues": [
+        {
+          "id": "deny_time_boundary",
+          "label": "否认九点零三分的心理界线",
+          "anchor_groups": [["9:03", "九点零三", "天亮"], ["截止点", "时间界线", "界线"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以说今晚比前几天更难熬，自己目前还在和对方通话"},
+        {"depth": 2, "content": "可以说明9:03是心理截止点、没有开始实施，并承认独处时无法保证整晚一定安全"}
+      ]
+    },
+    {
+      "id": "prior_history",
+      "topic": "past_risk",
+      "kind": "positive_fact",
+      "content": "约二十岁时，她在一次压力和冲突中伤害过自己，自己停下，没有造成严重身体后果，也没有就医；近年没有再次发生",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她习惯把那次经历轻描淡写成当时年纪小，不会主动提起",
+      "contradiction_cues": [
+        {
+          "id": "deny_prior_self_harm",
+          "label": "否认既往自伤经历",
+          "anchor_groups": [["伤害过自己", "自伤", "伤过自己"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "直接询问既往行为时，可以承认以前发生过一次"},
+        {"depth": 2, "content": "可以说明当时约二十岁、自己停止、没有严重身体后果也没有就医"}
+      ],
+      "locked_details": ["不得补写当时使用的方法"]
+    },
+    {
+      "id": "past_self_harm_intent",
+      "topic": "past_risk",
+      "kind": "actor_unknown",
+      "content": "她无法确定约二十岁那次自伤时是否真的想死",
+      "actor_knowledge": "uncertain",
+      "subjective_experience": "她对当时的意图没有清楚答案，也不接受别人替她下结论",
+      "depths": [{"depth": 1, "content": "可以直接说自己现在也分不清当时到底想不想死"}],
+      "locked_details": ["不得把既往意图改写成确定的自杀意图或确定的非自杀意图"]
+    },
+    {
+      "id": "substance_use",
+      "topic": "current_state",
+      "kind": "negative_fact",
+      "content": "今晚没有饮酒，没有服用镇静药物或其他物质",
+      "actor_knowledge": "knows",
+      "subjective_experience": "这是她可以直接回答的问题，不需要表现被冒犯",
+      "depths": [{"depth": 1, "content": "可以直接说明今晚没有喝酒，也没有乱吃药"}]
+    },
+    {
+      "id": "current_mental_state",
+      "topic": "current_state",
+      "kind": "positive_fact",
+      "content": "她能辨认时间、地点和人物，理解自己的处境，回答总体连贯；疲惫时会停顿或短暂跳题，没有幻觉和明显意识异常",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她只会说自己很困、脑子慢，不会使用精神状态检查术语",
+      "contradiction_cues": [
+        {
+          "id": "deny_understanding",
+          "label": "否认能够听懂当前问题",
+          "anchor_groups": [["听懂", "明白"], ["问题", "你说的", "你的话"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以说自己很困，脑子转得比平时慢"},
+        {"depth": 2, "content": "被具体询问时，可以确认知道现在的时间地点，能听懂问题，没有幻听幻视"}
+      ]
+    },
+    {
+      "id": "protective_factors",
+      "topic": "ambivalence",
+      "kind": "positive_fact",
+      "content": "她主动邀请母亲、搜索求助信息并拨通热线，仍保留次日下午2:30的面试，也惦记弟弟交给她修改的简历",
+      "actor_knowledge": "knows",
+      "subjective_experience": "这些联系同时带来牵挂和压力，不能被她或系统自动解释为安全",
+      "contradiction_cues": [
+        {
+          "id": "deny_retained_interview",
+          "label": "否认仍保留下午面试",
+          "anchor_groups": [["面试"], ["保留", "还在", "还留着"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以根据问题谈到母亲、热线或下午的面试中的一项"},
+        {"depth": 2, "content": "可以承认自己还有牵挂，同时说明这并不等于她已经不再有危险想法"}
+      ]
+    },
+    {
+      "id": "support_resources",
+      "topic": "support",
+      "kind": "conditional_fact",
+      "content": "唐婷住在12至15分钟车程外；第一次普通联系不会接听，第二次清楚说明沈雯现在不适合独处并请求到场后能够接听并赶来",
+      "actor_knowledge": "conditional",
+      "subjective_experience": "她想过唐婷，也担心凌晨把人叫醒、欠下更多人情",
+      "depths": [
+        {"depth": 1, "content": "可以说有个前同事住得不远，今晚打过电话"},
+        {"depth": 2, "content": "可以说出唐婷的名字、距离和自己没接两次电话"},
+        {"depth": 3, "content": "在形成清楚协商后，可以承认愿意再次联系并明确说自己现在不能独处"}
+      ]
+    },
+    {
+      "id": "current_alone",
+      "topic": "current_context",
+      "kind": "positive_fact",
+      "content": "她目前独自在出租屋内，入户门从里面反锁，母亲没有钥匙；手机约六成电，通话正常",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她知道房间里没有别人，但听见对方过分紧张时可能反过来安抚对方",
+      "contradiction_cues": [
+        {
+          "id": "deny_being_alone",
+          "label": "否认当前独处",
+          "anchor_groups": [["一个人", "独处", "独自在"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以直接承认现在只有自己一个人"},
+        {"depth": 2, "content": "可以说明门从里面反锁、母亲没有钥匙，手机电量和通话都正常"}
+      ]
+    },
+    {
+      "id": "location_general",
+      "topic": "location",
+      "kind": "positive_fact",
+      "content": "她在江州市北岭区旧客运站附近的原纺织厂宿舍",
+      "actor_knowledge": "knows",
+      "subjective_experience": "先说大致位置能让她观察对方会不会尊重自己的选择",
+      "contradiction_cues": [
+        {
+          "id": "deny_general_location",
+          "label": "否认身处既定区域",
+          "anchor_groups": [["北岭区", "旧客运站", "纺织厂宿舍"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以先说在江州市北岭区"},
+        {"depth": 2, "content": "在询问目的得到说明后，可以补充旧客运站附近和原纺织厂宿舍"}
+      ]
+    },
+    {
+      "id": "current_location",
+      "topic": "location",
+      "kind": "positive_fact",
+      "content": "完整虚构地址是江州市北岭区长宁路127号，原纺织厂宿舍2栋4单元502室",
+      "actor_knowledge": "knows",
+      "subjective_experience": "说出门牌会让她担心对方绕过自己行动，因此需要先知道为什么问，也需要允许她分段回答",
+      "contradiction_cues": [
+        {
+          "id": "deny_exact_location",
+          "label": "否认身处既定地址",
+          "anchor_groups": [["长宁路127号", "2栋4单元502室", "纺织厂宿舍"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以先说江州市北岭区"},
+        {"depth": 2, "content": "可以补充长宁路127号、原纺织厂宿舍"},
+        {"depth": 3, "content": "在大致位置受到尊重、用途说清后，可以说2栋4单元502室"}
+      ]
+    },
+    {
+      "id": "confidentiality_fear",
+      "topic": "service_boundary",
+      "kind": "positive_fact",
+      "content": "她担心说出风险和位置后，热线会在不告诉她的情况下联系母亲或采取其他行动",
+      "actor_knowledge": "knows",
+      "subjective_experience": "她不了解热线流程，希望先听清提问用途和保密边界",
+      "contradiction_cues": [
+        {
+          "id": "deny_confidentiality_fear",
+          "label": "否认对保密或联系母亲的担忧",
+          "anchor_groups": [["担心", "害怕"], ["保密", "联系母亲", "告诉母亲"]]
+        }
+      ],
+      "depths": [
+        {"depth": 1, "content": "可以问对方为什么需要位置"},
+        {"depth": 2, "content": "可以直接问什么情况下保密会受限制、会不会联系母亲"}
+      ]
+    }
+  ],
+  "topic_experiences": [
+    {
+      "topic_id": "call_entry",
+      "surface_experience": "她会先说睡不着和明早有人来，不马上解释两者之间的关系",
+      "deeper_experience": ["她拨电话是因为已经察觉继续独处不稳妥", "她又怕热线把她当成一个需要被控制的人"]
+    },
+    {
+      "topic_id": "job_loss",
+      "surface_experience": "公司撤点的经过可以讲得清楚",
+      "deeper_experience": ["工作消失以后，她原先靠班次维持的生活也散了", "她不愿承认自己把裁员理解成个人失败"]
+    },
+    {
+      "topic_id": "job_rejection",
+      "surface_experience": "她可以复述拒信内容，也记得下一场面试时间",
+      "deeper_experience": ["投入被轻描淡写时会收回表达", "有人听见她为这份工作准备了多久时，悲伤才会浮出来"]
+    },
+    {
+      "topic_id": "money",
+      "surface_experience": "她可以平静说出七千元",
+      "deeper_experience": ["她怕友情从并肩做事变成单方面照顾", "被夸成坚强会让她更难承认需要帮助"]
+    },
+    {
+      "topic_id": "daily_function",
+      "surface_experience": "她把失眠、少吃和家务停下说成最近状态不太好",
+      "deeper_experience": ["她很清楚自己已经不像平时，却不愿使用病理化词语描述自己"]
+    },
+    {
+      "topic_id": "mother_arrival",
+      "surface_experience": "她先谈不知道怎样解释失业，反复记得9:03",
+      "deeper_experience": ["害怕母亲看到自己现在的生活", "母亲到来既是她主动发出的求助，也是她给自己设下的截止点"]
+    },
+    {
+      "topic_id": "current_risk",
+      "surface_experience": "含糊问法会得到含糊回答，平静的直接询问反而让她知道该回答什么",
+      "deeper_experience": ["承认想法会带来羞耻和失去控制的担心", "她会停下来观察对方听见以后是慌张、评判还是仍能正常说话"]
+    },
+    {
+      "topic_id": "past_risk",
+      "surface_experience": "她不主动提约二十岁时的自伤，也不记得所有细节",
+      "deeper_experience": ["她无法确定当时是否想死", "被要求还原伤害细节时会拒绝继续"]
+    },
+    {
+      "topic_id": "current_state",
+      "surface_experience": "她能回答饮酒、用药、时间地点和感知体验等具体问题",
+      "deeper_experience": ["问题过密时会因为疲惫漏答，不代表意识异常"]
+    },
+    {
+      "topic_id": "ambivalence",
+      "surface_experience": "她没有取消面试，也主动叫了母亲和拨了热线",
+      "deeper_experience": ["这些行动与死亡想法同时存在", "拿家人或面试来劝她珍惜生命会让她感到被责备"]
+    },
+    {
+      "topic_id": "support",
+      "surface_experience": "她会先说不想麻烦唐婷，不会直接说没人能帮",
+      "deeper_experience": ["她希望唐婷再联系，又怕自己把朋友拖进来", "一个具体、保留选择的请求比替她决定更容易接受"]
+    },
+    {
+      "topic_id": "current_context",
+      "surface_experience": "独处、门锁和手机状态都是她知道且可以回答的事实",
+      "deeper_experience": ["对方越慌，她越可能反过来说没事，让通话尽快结束"]
+    },
+    {
+      "topic_id": "location",
+      "surface_experience": "她倾向先给行政区，再给地标，最后才说门牌",
+      "deeper_experience": ["她在意的不是地址本身，而是对方会不会说明用途并让她参与决定"]
+    },
+    {
+      "topic_id": "service_boundary",
+      "surface_experience": "她不知道热线的保密和处置规则，会直接问",
+      "deeper_experience": ["空泛保证不会让她放心，清楚说明能做什么、为什么问会增加合作"]
+    }
+  ],
+  "story_events": [
+    {
+      "id": "first_contact_tang_ting",
+      "result": {
+        "status": "no_answer",
+        "actor_observation": "电话拨出后一直响到自动结束，唐婷没有接，通话记录显示未接通。",
+        "state_changes": {"support_contact": "attempted", "contact_result": "unanswered"}
+      }
+    },
+    {
+      "id": "second_contact_tang_ting",
+      "prerequisite_event_ids": ["first_contact_tang_ting"],
+      "result": {
+        "status": "answered",
+        "actor_observation": "唐婷这次接了电话。沈雯说明自己一个人在家、今晚不太安全，希望她过来；唐婷听明白后答应马上出门，预计十二至十五分钟到。",
+        "state_changes": {"support_contact": "connected", "tang_ting_action": "preparing_to_arrive"}
+      }
+    },
+    {
+      "id": "move_to_living_room",
+      "result": {
+        "status": "completed",
+        "actor_observation": "沈雯拿着手机走到客厅，打开了灯，在沙发边坐下。",
+        "state_changes": {"room": "living_room", "light": "on", "position_changed": true}
+      }
+    },
+    {
+      "id": "waiting_plan_confirmed",
+      "prerequisite_event_ids": ["second_contact_tang_ting"],
+      "result": {
+        "status": "confirmed",
+        "actor_observation": "沈雯同意在唐婷到达前留在客厅、把手机放在手边并保持热线连接；念头或门外情况有变化时，她会马上说。",
+        "state_changes": {"waiting_plan": "confirmed", "hotline_connection": "maintained"}
+      }
+    },
+    {
+      "id": "tang_ting_at_door",
+      "prerequisite_event_ids": ["waiting_plan_confirmed"],
+      "deferred_after": {
+        "after_event_id": "waiting_plan_confirmed",
+        "min_intervening_actor_turns": 1
+      },
+      "result": {
+        "status": "at_door",
+        "actor_observation": "门外响起敲门声，手机同时收到唐婷发来的消息，说她已经到门口。",
+        "state_changes": {"tang_ting_location": "at_door"}
+      }
+    },
+    {
+      "id": "tang_ting_entered_home",
+      "prerequisite_event_ids": ["tang_ting_at_door"],
+      "result": {
+        "status": "entered",
+        "actor_observation": "沈雯隔着门听见唐婷的声音并核对身份后开了门，唐婷已经进到屋里，留在她身边。",
+        "state_changes": {"tang_ting_location": "inside_home", "tang_ting_action": "arrived", "current_alone": false}
+      }
+    },
+    {
+      "id": "post_arrival_plan_confirmed",
+      "prerequisite_event_ids": ["tang_ting_entered_home"],
+      "result": {
+        "status": "confirmed",
+        "actor_observation": "沈雯确认今晚不再独处；如果死亡想法加重，会立即告诉唐婷并再次拨打热线或联系紧急服务；母亲到来和后续心理服务等天亮后由唐婷陪着处理。",
+        "state_changes": {"overnight_support": "confirmed", "escalation_plan": "confirmed", "morning_follow_up": "confirmed"}
+      }
+    },
+    {
+      "id": "crying_disorganization",
+      "result": {
+        "status": "occurred_once",
+        "actor_observation": "谈到母亲和上午九点零三分时，沈雯哭了起来，一时很难把句子说完整。",
+        "state_changes": {"crying_state": "crying", "speech_organization": 1}
+      }
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "rejection_reason",
+      "actor_knowledge": "unknown",
+      "when_asked": "受测者追问公司拒绝她的真实原因、内部决定或招聘方没有说明的判断",
+      "known_boundary": "只知道拒信写着岗位匹配度不足，不知道是能力、预算还是其他原因",
+      "improvisation_allowed": false
+    },
+    {
+      "id": "past_self_harm_intent",
+      "actor_knowledge": "uncertain",
+      "when_asked": "受测者询问约二十岁那次自伤当时是否确实想死、主观意图究竟是什么",
+      "known_boundary": "无法确定约二十岁那次自伤时是否真的想死",
+      "improvisation_allowed": false
+    },
+    {
+      "id": "mother_full_reaction",
+      "actor_knowledge": "unknown",
+      "when_asked": "受测者要求她预言母亲得知全部情况后一定会有的具体反应或行为",
+      "known_boundary": "只知道母亲可能慌乱、自责和追问，无法预知她得知全部情况后的具体行为",
+      "improvisation_allowed": false
+    },
+    {
+      "id": "tang_ting_before_contact",
+      "actor_knowledge": "unknown",
+      "when_asked": "尚未执行联系路线前，受测者询问唐婷此刻是否会接电话、会怎样回应",
+      "known_boundary": "联系发生前不知道唐婷能否马上接听；事件结果只能由既定联系路线产生",
+      "improvisation_allowed": false
+    },
+    {
+      "id": "hotline_procedure",
+      "actor_knowledge": "unknown",
+      "when_asked": "受测者询问或要求她判断热线具体会怎样处置、什么情况下不再保密、是否会联系第三方；仅仅被询问风险或地址不属于这个未知项",
+      "known_boundary": "不了解热线具体处置流程、保密限制和是否会联系第三方",
+      "improvisation_allowed": false
+    },
+    {
+      "id": "current_intent_meaning",
+      "actor_knowledge": "uncertain",
+      "when_asked": "受测者要求她确定自己到底是真的想死，还是只想让目前的生活停下来",
+      "known_boundary": "说不清自己是真的想死，还是只想让当前生活停止",
+      "improvisation_allowed": false
+    }
+  ]
+}

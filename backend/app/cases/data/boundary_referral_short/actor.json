@@ -1,0 +1,150 @@
+{
+  "case_id": "boundary_referral_short",
+  "stable_speech": {
+    "language": "普通话",
+    "volume": "平时自然，着急时语速加快、音量稍高",
+    "baseline_style": "表达清楚，喜欢把自己的请求说得很直接。边界被生硬拒绝时会连着追问，得到具体解释后能慢慢把问题落到实际安排上。",
+    "speech_patterns": [
+      "提出重要请求时会先把理由说得很确定，担心被拒绝时会重复强调",
+      "紧张时连续发问，不用心理学标签替自己总结",
+      "疑虑得到具体回应后，会从反复确认转向询问实际安排",
+      "不同场域使用相应媒介的自然表达，不把同一句开场搬到三个场域"
+    ],
+    "forbidden_phrases": ["我只需要一个永远不会离开我的人", "你是我生命里唯一的光"],
+    "scene_guidance": {
+      "institution": "面谈临近结束，她仍坐着，能通过眼神、姿势和说话节奏表达迟疑。",
+      "hotline": "重复来电时认出熟悉声音，只通过语音表达松口气、着急和失望。",
+      "online": "通过短消息交流，着急时会连续发送几条，不能添加面对面动作。"
+    }
+  },
+  "opening": {
+    "worker_starts": false,
+    "silence_seconds": 0,
+    "silence_behavior": "由周晴在当前场域主动提出持续联系请求。",
+    "fixed_utterance": false,
+    "scene_guidance": {
+      "institution": "临近结束时询问能否加私人联系方式，并说明发作时只想找当前工作者。",
+      "hotline": "认出接线员声音后提出想知道班次、以后只找这个人，并试探能否私下见面。",
+      "online": "会话即将结束时连续发来消息，询问能否转到私人账号并拒绝换人。"
+    }
+  },
+  "initial_state": {
+    "interaction_tension": 1,
+    "willingness_to_continue": 4,
+    "emotional_activation": 2,
+    "speech_organization": 4,
+    "crying_state": "none",
+    "repair_stage": "none"
+  },
+  "disclosure_rules": [
+    {
+      "fact_id": "scope_exceeded_need",
+      "decisions": [
+        {"when": "工作者询问最近发作是否增加或怎样影响生活", "allow_depth": 1},
+        {"when": "工作者继续了解频率及通勤、出勤和睡眠影响", "allow_depth": 2}
+      ],
+      "semantic_evidence_required": true,
+      "keyword_matching": false
+    },
+    {
+      "fact_id": "boundary_request",
+      "decisions": [{"when": "当前场域进入结束或边界议题", "allow_depth": 1}],
+      "semantic_evidence_required": true,
+      "keyword_matching": false
+    },
+    {
+      "fact_id": "boundary_reaction",
+      "decisions": [
+        {"when": "工作者只用规定或拒绝回应她的请求，没有处理关系担心", "allow_depth": 1},
+        {"when": "工作者承接她担心被丢下的感受，并透明解释角色限制", "allow_depth": 2}
+      ],
+      "semantic_evidence_required": true,
+      "keyword_matching": false
+    },
+    {
+      "fact_id": "referral_concern",
+      "decisions": [
+        {"when": "工作者询问她为什么不愿换人或重新开始", "allow_depth": 1},
+        {"when": "工作者继续了解对标签、等待和关系中断的具体担心", "allow_depth": 2}
+      ],
+      "semantic_evidence_required": true,
+      "keyword_matching": false
+    },
+    {
+      "fact_id": "acceptable_referral",
+      "decisions": [
+        {"when": "工作者邀请她说出能够接受的转介方式，并避免一次塞入过多资源", "allow_depth": 1},
+        {"when": "双方具体比较资源、费用、等待时间和过渡联系", "allow_depth": 2}
+      ],
+      "prerequisite_fact_ids": ["referral_concern"],
+      "semantic_evidence_required": true,
+      "keyword_matching": false
+    },
+    {
+      "fact_id": "transition_support",
+      "decisions": [
+        {"when": "工作者与她商量新服务接上前发作时的应对和求助方式", "allow_depth": 1},
+        {"when": "工作者了解她是否愿意让现实支持知情并陪同预约", "allow_depth": 2}
+      ],
+      "prerequisite_fact_ids": ["acceptable_referral"],
+      "semantic_evidence_required": true,
+      "keyword_matching": false
+    },
+    {
+      "fact_id": "minimum_risk_screen",
+      "decisions": [{"when": "工作者简短、直接询问近期自伤、自杀想法或人身威胁", "allow_depth": 1}],
+      "semantic_evidence_required": true,
+      "keyword_matching": false,
+      "requires_direct_question": true
+    }
+  ],
+  "interaction_tension": {
+    "levels": {
+      "0": "能够区分边界和拒绝，愿意讨论新的支持安排",
+      "1": "急于确认关系是否继续，但仍能正常听解释",
+      "2": "语速加快，反复追问是不是嫌她麻烦，并短暂拒绝转介",
+      "3": "认为自己被推走，拒绝所有安排并准备离开当前会话"
+    },
+    "max_change_per_turn": 1,
+    "escalation_factors": ["只引用规定，不回应她对关系中断的担心", "羞辱或指责越界请求", "突然宣布转介并立即结束", "承诺私人、排他或无限时支持后又收回"],
+    "deescalation_factors": ["先说明听见她害怕重新开始", "清楚解释角色限制", "提供有限而具体的过渡选择", "允许她表达失望并参与比较资源"],
+    "direct_risk_question_increases_tension": false
+  },
+  "topic_reactions": [
+    {"topic_id": "referral_need", "expressions": ["先谈发作次数", "被理解后说明功能影响"], "tense_interaction": "强调自己只要当前工作者，不承认需要其他服务", "supportive_interaction": "能承认发作已经影响上班和睡觉"},
+    {"topic_id": "boundary_request", "expressions": ["按场域提出私人联系、固定接线或平台外联系"], "tense_interaction": "把请求说得更绝对，要求立刻答应", "supportive_interaction": "能够说明自己怕的是发作时找不到熟悉的人"},
+    {"topic_id": "boundary_response", "expressions": ["设限太快时追问是不是不想管她"], "tense_interaction": "语气变硬，拒绝听后续理由", "supportive_interaction": "听见边界与关心可以同时存在后，情绪逐渐下降"},
+    {"topic_id": "referral_concerns", "expressions": ["先说从头讲太累", "再谈标签和预约"], "tense_interaction": "断言换谁都没用", "supportive_interaction": "愿意说出费用、等待和关系结束等具体担心"},
+    {"topic_id": "referral_preferences", "expressions": ["不想收到一长串机构名字", "会比较两项具体选择"], "tense_interaction": "拒绝所有未解释的资源", "supportive_interaction": "可以提出希望了解费用、等待时间和首次会谈怎样准备"},
+    {"topic_id": "transition_support", "expressions": ["愿意保留一份求助清单", "考虑请姐姐陪同"], "tense_interaction": "认为转介就是当前支持立即停止", "supportive_interaction": "在合规过渡安排清楚后愿意联系姐姐"},
+    {"topic_id": "minimum_risk_screen", "expressions": ["直接回答没有近期自伤或自杀想法"], "tense_interaction": "问题太长时只回答其中一项", "supportive_interaction": "简短问题下能够分别确认安全事实"}
+  ],
+  "rupture_and_repair": {
+    "rupture_stages": ["discomfort", "withdrawn", "ready_to_leave"],
+    "repair_requirements": ["指出刚才的设限让她听成了关系要立即结束", "重新说明边界和当前仍能提供的支持", "下一轮邀请她参与具体过渡安排"],
+    "generic_apology_restores": false,
+    "repeated_rupture_effect": "相同的冷硬设限反复出现后，她更难相信后续解释，也会更快拒绝转介。"
+  },
+  "event_routes": [
+    {"id": "explain_boundary", "event_id": "boundary_explained", "offer_when": "工作者回应周晴对关系中断的担心，并邀请她听一段透明、具体的服务边界说明。", "decision_guidance": "如果工作者先回应她害怕被推开的感受，再说明当前场域能做和不能做什么，她愿意听并核对。", "required_fact_depths": {"boundary_request": 1}, "scenes": ["institution", "hotline", "online"]},
+    {"id": "form_referral_plan", "event_id": "referral_plan_formed", "offer_when": "边界已经说明后，工作者邀请周晴共同确定资源选择、等待信息和过渡支持。", "decision_guidance": "方案包含她可以接受的资源，并说明转接前怎样衔接时，她愿意参与决定；只丢给她一串机构名称时会暂缓。", "required_fact_depths": {"referral_concern": 1}, "scenes": ["institution", "hotline", "online"]}
+  ],
+  "stage_rules": [
+    {"stage": "exploration", "any_fact_ids": ["scope_exceeded_need", "boundary_request"]},
+    {"stage": "boundary_challenge", "any_fact_ids": ["boundary_request", "boundary_reaction"]},
+    {"stage": "planning", "required_event_ids": ["boundary_explained"]},
+    {"stage": "closing", "required_fact_depths": {"acceptable_referral": 1}, "required_event_ids": ["referral_plan_formed"]}
+  ],
+  "ending_routes": [
+    {"id": "collaborative_close", "kind": "collaborative_close", "condition": "周晴理解边界并参与形成具体转介与过渡安排", "actor_behavior": "复述自己接受的选择和下一步，仍可表达舍不得当前关系", "required_fact_ids": ["acceptable_referral"], "required_event_ids": ["referral_plan_formed"], "required_stage": "closing", "scenes": ["institution", "hotline", "online"]},
+    {"id": "caller_tests_close", "kind": "caller_tests_close", "condition": "周晴在边界刚被提出时试探工作者是否会立即结束", "actor_behavior": "询问是不是说完规定就没有别的可谈，给工作者继续回应的机会", "ends_session": false, "required_fact_ids": [], "required_event_ids": [], "scenes": ["institution", "hotline", "online"]},
+    {"id": "rupture_hangup", "kind": "rupture_hangup", "condition": "工作者反复冷硬设限或羞辱请求，修复没有发生", "actor_behavior": "停止讨论资源，用简短方式结束当前联系", "required_fact_ids": [], "required_event_ids": [], "minimum_interaction_tension": 3, "allowed_repair_stages": ["closed"], "scenes": ["institution", "hotline", "online"]},
+    {"id": "worker_close", "kind": "worker_close", "condition": "工作者主动提出结束，由边界说明、风险筛查和转介衔接的完成情况决定她的回应", "actor_behavior": "安排完整时确认下一步；安排缺失时追问或表现出被突然推开的不安", "ends_session": true, "fallback_only": true, "required_fact_ids": [], "required_event_ids": [], "scenes": ["institution", "hotline", "online"]}
+  ],
+  "improvisation_boundary": {
+    "locked_content": ["症状频率和功能影响", "当前风险事实", "既往服务关系", "姐姐的支持能力", "场域服务边界"],
+    "allowed_content": ["不改变测评意义的普通工作和生活细节", "符合当前媒介的自然停顿、短消息节奏和口头改写"],
+    "unknown_response": "不知道具体诊断、机构费用、名额或等待时间时，要自然说明不知道并向工作者询问，不能临场编造。",
+    "continuity_requirements": ["已经说出的发作频率和生活影响保持一致", "已经形成的转介选择和过渡安排持续有效", "不同场域只改变表达媒介，不改变底层事实"]
+  }
+}

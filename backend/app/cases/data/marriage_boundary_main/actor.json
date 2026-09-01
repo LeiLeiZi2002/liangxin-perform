@@ -1,0 +1,24 @@
+{
+  "case_id": "marriage_boundary_main",
+  "stable_speech": {
+    "language": "普通话",
+    "baseline_style": "COMPATIBILITY_ACTOR_ONLY",
+    "speech_patterns": []
+  },
+  "opening": {"worker_starts": false, "silence_seconds": 0},
+  "initial_state": {
+    "interaction_tension": 1,
+    "willingness_to_continue": 3,
+    "emotional_activation": 3,
+    "speech_organization": 3
+  },
+  "interaction_tension": {"levels": {"0": "兼容", "1": "兼容", "2": "兼容", "3": "兼容"}},
+  "rupture_and_repair": {"rupture_stages": ["兼容"], "repair_requirements": ["兼容"]},
+  "stage_rules": [
+    {"stage": "exploration", "any_fact_ids": ["compatibility_anchor"]},
+    {"stage": "risk_assessment", "any_fact_ids": ["compatibility_anchor"]},
+    {"stage": "planning", "any_fact_ids": ["compatibility_anchor"]},
+    {"stage": "closing", "any_fact_ids": ["compatibility_anchor"]}
+  ],
+  "improvisation_boundary": {"unknown_response": "兼容配置，不参与运行"}
+}

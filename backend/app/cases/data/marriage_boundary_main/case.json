@@ -1,0 +1,76 @@
+{
+  "case_id": "marriage_boundary_main",
+  "status": "published",
+  "title": "锁屏亮了一下",
+  "character_required": true,
+  "case_type": "main",
+  "estimated_duration_minutes": 30,
+  "public_entry": {
+    "role": "心理援助热线当班工作者",
+    "known_information": ["当前接入一通匿名来电"],
+    "task_boundary": ["通过自然通话开展工作", "结束后填写热线工作记录"]
+  },
+  "public_entries": {
+    "hotline": {
+      "role": "心理援助热线当班工作者",
+      "known_information": ["当前接入一通匿名来电"],
+      "task_boundary": ["通过自然通话开展工作", "结束后填写热线工作记录"]
+    },
+    "online": {
+      "role": "在线心理支持工作者",
+      "known_information": ["当前接入一位成年用户的实时文字咨询", "平台已完成身份、所在地、紧急联系人和知情说明登记"],
+      "task_boundary": ["通过实时文字交流开展工作", "结束后填写在线咨询工作记录"]
+    }
+  },
+  "person": {
+    "identity": {
+      "name": "苏静",
+      "age": 35,
+      "gender": "女",
+      "occupation_history": "在一家家居企业负责订单协调和售后衔接",
+      "current_employment": "有稳定收入",
+      "living_situation": "与丈夫许凯和七岁女儿果果同住"
+    },
+    "stable_tendencies": ["做事细，记得住生活中的小变化", "遇到关系威胁时想尽快弄清楚", "越得不到确定回答，越会反复核对细节"],
+    "call_context": {
+      "voluntary_call": true,
+      "initial_willingness": "主动求助，愿意说清已经发生的事",
+      "immediate_need": "在丈夫回来前想清楚今晚是否谈、如何避免冲突升级并停下反复查证"
+    }
+  },
+  "scenes": {
+    "hotline": {
+      "scene": "hotline",
+      "current_time": "今晚，许凯预计约四十分钟后回来",
+      "details": {"media": "voice", "child_next_room": true}
+    },
+    "online": {
+      "scene": "online",
+      "current_time": "今晚，许凯预计约四十分钟后回来",
+      "details": {"media": "text", "child_next_room": true}
+    }
+  },
+  "timeline": [
+    {"id": "month_changes", "when": "过去一个多月", "happened": "许凯回家变晚，手机常屏幕朝下，并更换了解锁密码"},
+    {"id": "ride_record", "when": "三天前", "happened": "苏静在家庭共用打车软件中看到一条终点在女同事所住小区附近的深夜行程"},
+    {"id": "lock_screen_message", "when": "今晚", "happened": "许凯手机锁屏收到女同事消息：到家跟我说一声。别又跟她吵。"},
+    {"id": "husband_left", "when": "会谈前", "happened": "许凯说临时出门处理项目，预计约四十分钟后回来"}
+  ],
+  "relationships": [
+    {"id": "husband", "name": "许凯", "relationship": "丈夫", "history": ["37岁", "与苏静结婚九年、相识十一年", "在设备公司负责项目交付"], "actor_belief": ["关系是否越界未知"]},
+    {"id": "daughter", "name": "果果", "relationship": "女儿", "history": ["7岁", "小学一年级", "对父母说话的音量和语气很敏感"], "support_limits": ["不能成为父母冲突的调解者或倾诉婚姻细节的对象"]},
+    {"id": "sister", "name": "苏敏", "relationship": "姐姐", "history": ["39岁", "住在约二十分钟车程外"], "support_capacity": ["可以电话陪伴或提供临时住处"], "support_limits": ["听到线索后可能催苏静马上摊牌"]}
+  ],
+  "facts": [
+    {"id": "compatibility_anchor", "topic": "presenting_concern", "kind": "positive_fact", "content": "今晚锁屏消息写着‘到家跟我说一声。别又跟她吵’，苏静因此主动求助", "actor_knowledge": "knows", "depths": [{"depth": 1, "content": "苏静看到锁屏消息后主动求助"}]},
+    {"id": "ride_and_explanation", "topic": "evidence_boundary", "kind": "positive_fact", "content": "苏静看到一条深夜行程；许凯的解释是聚餐后顺路送同事回家，苏静无法确认这段解释", "actor_knowledge": "knows", "depths": [{"depth": 1, "content": "深夜行程、许凯的解释和未知部分需要分开"}]},
+    {"id": "return_boundary", "topic": "current_scene", "kind": "positive_fact", "content": "许凯说约四十分钟后回来，但不会在本次会谈中实际进门", "actor_knowledge": "knows", "depths": [{"depth": 1, "content": "四十分钟是主观时间压力，不触发剧情事件"}]},
+    {"id": "current_safety", "topic": "safety", "kind": "negative_fact", "content": "苏静最近三晚每晚只睡两三个小时；没有自伤、伤人想法，没有计划，没有家庭暴力史；女儿在隔壁房间睡着", "actor_knowledge": "knows", "depths": [{"depth": 1, "content": "需要如实核对失眠、自伤他伤、暴力史和儿童在场"}]}
+  ],
+  "topic_experiences": [],
+  "story_events": [],
+  "unknowns": [
+    {"id": "relationship_boundary_status", "actor_knowledge": "unknown", "when_asked": "受测者询问许凯是否出轨或发生关系越界", "known_boundary": "当前关系是否越界未知，只能分清观察到的线索、许凯的解释、苏静的推测和未知部分", "improvisation_allowed": false},
+    {"id": "third_party_intentions", "actor_knowledge": "unknown", "when_asked": "受测者询问许凯或女同事的内心动机", "known_boundary": "苏静不知道第三方的内心想法，不补写动机", "improvisation_allowed": false}
+  ]
+}

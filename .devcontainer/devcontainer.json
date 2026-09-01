@@ -1,0 +1,29 @@
+{
+  "name": "量心 Perform",
+  "image": "mcr.microsoft.com/devcontainers/python:3.14-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+  "postCreateCommand": "python3 -m venv .venv && .venv/bin/python -m pip install -r backend/requirements.lock && .venv/bin/python -m pip install --no-deps -e ./backend && cd frontend && npm ci",
+  "postStartCommand": "mkdir -p data/.runtime; setsid -f bash scripts/start-codespace.sh > data/.runtime/start-codespace.log 2>&1 </dev/null",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "量心 Perform",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md"]
+    }
+  }
+}
