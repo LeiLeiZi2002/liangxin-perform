@@ -55,6 +55,14 @@ Describe 'start-demo 一键重启与身份检查' {
         $source | Should Match "Stop-OwnedDemoProcess.*'frontend\.pid'"
     }
 
+    It '空的 PID 或启动日志不会触发 null 的 Trim 调用' {
+        $source | Should Not Match '\(Get-Content[^\r\n]*-Raw\)\.Trim\(\)'
+        @([regex]::Matches(
+            $source,
+            "\(\(Get-Content[^\r\n]*-Raw\) -join ''\)\.Trim\(\)"
+        )).Count | Should Be 2
+    }
+
     It '自管进程停止后检查固定端口，未知占用只报错不终止' {
         $portFunction = Get-LauncherFunctionText -Name 'Assert-DemoPortsAvailable'
 
@@ -83,6 +91,10 @@ Describe 'start-demo 一键重启与身份检查' {
         $source | Should Match '\$consecutiveReadySamples\+\+'
         $source | Should Match '\$consecutiveReadySamples\s+-ge\s+2'
         $source | Should Match '(?s)else\s*\{\s*\$consecutiveReadySamples\s*=\s*0'
+    }
+
+    It '不因外层 wsl 进程提前退出而中断服务健康检查' {
+        $source | Should Not Match 'if\s*\(\$process\.HasExited\)'
     }
 }
 

@@ -47,7 +47,7 @@ function Stop-OwnedDemoProcess {
         return
     }
 
-    $pidText = (Get-Content -LiteralPath $pidFile -Raw).Trim()
+    $pidText = ((Get-Content -LiteralPath $pidFile -Raw) -join '').Trim()
     if ($pidText -notmatch '^\d+$') {
         Remove-Item -LiteralPath $pidFile -Force
         return
@@ -164,9 +164,6 @@ try {
     $healthy = $false
     $consecutiveReadySamples = 0
     for ($attempt = 0; $attempt -lt 120; $attempt++) {
-        if ($process.HasExited) {
-            break
-        }
         if ((Test-BackendHealth) -and (Test-FrontendHealth)) {
             $consecutiveReadySamples++
             if ($consecutiveReadySamples -ge 2) {
@@ -182,7 +179,7 @@ try {
 
     if (-not $healthy) {
         $details = if (Test-Path -LiteralPath $launcherLog) {
-            (Get-Content -LiteralPath $launcherLog -Raw).Trim()
+            ((Get-Content -LiteralPath $launcherLog -Raw) -join '').Trim()
         }
         if ($details) {
             throw "DEMO 启动失败：$details"
