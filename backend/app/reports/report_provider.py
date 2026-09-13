@@ -325,7 +325,9 @@ def _same_source_ref(left: EvidenceRef, right: EvidenceRef) -> bool:
 
 def _normalized_ref_quote(ref: EvidenceRef) -> str:
     if isinstance(ref, (DialogueRef, WorkRecordRef)):
-        return " ".join(ref.quote.split())
+        # 只为定位原始引文统一排版；最终返回的仍是冻结来源，不能改字或跨话轮。
+        quote = ref.quote.translate(str.maketrans({"‘": "'", "’": "'", "“": '"', "”": '"'}))
+        return " ".join(quote.split())
     return ""
 
 

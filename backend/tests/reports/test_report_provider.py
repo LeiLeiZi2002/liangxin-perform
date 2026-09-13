@@ -744,7 +744,17 @@ async def test_reduce_rejects_non_exact_unit_ref_before_lossy_conversion_and_rep
     assert result.units[0].turn_ids == ["turn-worker"]
 
 
-async def test_reduce_canonicalizes_unit_ref_with_whitespace_only_difference() -> None:
+@pytest.mark.parametrize(
+    ("frozen_quote", "generated_quote"),
+    [
+        ("第一句。\n\n第二句。", "第一句。\n第二句。"),
+        ("她说‘到家跟我说一声，别又跟她吵’。", "她说'到家跟我说一声，别又跟她吵'。"),
+        ('他说“先等一等”。', '他说"先等一等"。'),
+    ],
+)
+async def test_reduce_canonicalizes_unit_ref_with_typography_only_difference(
+    frozen_quote: str, generated_quote: str,
+) -> None:
     from app.reports.report_provider import LocalCodingOutput, ReportProvider
 
     raw = json.loads(_global_json())
@@ -756,7 +766,7 @@ async def test_reduce_canonicalizes_unit_ref_with_whitespace_only_difference() -
                 {
                     "kind": "dialogue",
                     "turn_id": "turn-worker",
-                    "quote": "第一句。\n第二句。",
+                    "quote": generated_quote,
                 }
             ],
         }
@@ -768,7 +778,7 @@ async def test_reduce_canonicalizes_unit_ref_with_whitespace_only_difference() -
         DialogueRef(
             kind="dialogue",
             turn_id="turn-worker",
-            quote="第一句。\n\n第二句。",
+            quote=frozen_quote,
         )
     ]
     client = FakeClient([json.dumps(raw, ensure_ascii=False)])
