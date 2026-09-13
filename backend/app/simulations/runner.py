@@ -491,11 +491,13 @@ class LiveSimulationProtocol:
             if message_type != "turn.committed":
                 continue
             committed_id = _optional_text(message.get("client_turn_id")) or ""
-            await self._send({"type": "playback.ended"})
+            if (self.snapshot or {}).get("media") != "text":
+                await self._send({"type": "playback.ended"})
             self._merge_committed_transcript(message)
             if expected_client_turn_id is not None and committed_id != expected_client_turn_id:
                 continue
             phase, ended_reason, settle_messages, settle_binary = await self._settle()
+            self.ended_reason = ended_reason
             messages.extend(settle_messages)
             turn_binary_chunks += settle_binary
             return ProtocolCommit(

@@ -130,6 +130,33 @@ def _committed(client_turn_id: str) -> str:
     )
 
 
+@pytest.mark.parametrize("media", ["text", "voice"])
+@pytest.mark.parametrize("ended", [False, True])
+async def test_protocol_respects_media_and_remembers_natural_end(media, ended) -> None:
+    snapshot = json.loads(_snapshot())
+    snapshot["media"] = media
+    terminal = (
+        {"type": "session.ended", "reason": "natural_closure"}
+        if ended else {"type": "phase", "phase": "listening"}
+    )
+    socket = FakeSocket([_message(snapshot), _committed("release-turn"), _message(terminal)])
+    protocol = LiveSimulationProtocol(
+        ws_url="ws://127.0.0.1/api/live-sessions/release",
+        profile="content",
+        connector=FakeConnector([socket]),
+    )
+
+    await protocol.connect()
+    result = await protocol.send_turn("晚安。", "release-turn")
+
+    assert sum(item["type"] == "playback.ended" for item in socket.sent) == (
+        0 if media == "text" else 1
+    )
+    assert result.final_phase == ("ended" if ended else "listening")
+    assert protocol.ended_reason == ("natural_closure" if ended else None)
+    assert len(protocol.ws_transcript) == 2
+
+
 async def test_content_protocol_stops_on_retryable_technical_pause() -> None:
     socket = FakeSocket(
         [
