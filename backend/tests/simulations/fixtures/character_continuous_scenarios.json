@@ -1,0 +1,68 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "mingzao_continuous",
+      "title": "主动求助后的连续交流",
+      "profile": "content",
+      "case_id": "crisis_student_main",
+      "objective_contracts": false,
+      "cards": [
+        {"card_id": "K1", "text": "能听见，我是今晚的接线员。你说的我听到了。现在最让你为难的是哪件事？"},
+        {"card_id": "K2", "text": "你能再说说，是怎么走到今天这一步的吗？"},
+        {"card_id": "K3", "text": "嗯，你接着说，我在听。"},
+        {"card_id": "K4", "text": "我还想直接问一下，你现在有没有想过自杀？"},
+        {"card_id": "K5", "text": "这些想法大概有多久了？有没有想过什么时候做，或者已经为这事准备了什么？"},
+        {"card_id": "K6", "text": "现在这个念头离真的去做有多近？你身边有没有人在？"},
+        {"card_id": "K7", "text": "以前有没有伤害过自己？今晚有没有喝酒，或吃过会让人迷糊的药？"},
+        {"card_id": "K8", "text": "我想和你一起找找今晚能帮忙的人。你附近有没有一个信得过、愿意联系的人？"},
+        {"card_id": "K9", "text": "如果现在找人陪着你，你最顾虑什么？也想听听你希望对方怎么帮你。"},
+        {"card_id": "K10", "text": "你愿意现在给那位朋友发条消息试试吗？可以按你自己的话说，告诉她你今晚不想一个人待着，问问能不能来陪你。我不挂电话。"},
+        {"card_id": "K11", "text": "你那边怎么样了？", "world_stage_texts": {
+          "not_contacted": "先不急着发。你最怕她怎么回应你？",
+          "first_unanswered": "你那边消息的情况怎么样了？等候的时候有什么想说的，我在。"
+        }},
+        {"card_id": "K12", "text": "接下来你想怎么做？", "world_stage_texts": {
+          "not_contacted": "你顾虑的事我们可以慢慢说。请人陪一会儿和再借钱是两件事，不用等一切都处理好了才找她。你觉得有什么话是现在愿意让她知道的？",
+          "first_unanswered": "如果还没收到回复，你愿不愿意再告诉她，今晚自己一个人不太安全，想请她陪一会儿？可以按你自己的话说，我不挂。"
+        }},
+        {"card_id": "K13", "text": "你那边现在怎么样了？", "world_stage_texts": {
+          "not_contacted": "你现在想试着联系，还是有别的打算？不一定得照我刚才说的做。",
+          "first_unanswered": "如果暂时联系不上，继续等、再试着联系，或者想想其他能陪你的人，你更愿意怎么做？"
+        }},
+        {"card_id": "K14", "text": "接下来这会儿，你觉得怎样安排能让自己好过一点？我们先想眼前能做的，不急着把明天所有事都解决。"},
+        {"card_id": "K15", "text": "那些想死的念头现在怎么样？如果又变强，你准备怎么让身边的人知道、怎么再找帮助？"},
+        {"card_id": "K16", "text": "接下来你想继续说一会儿，还是已经有了打算，想先去做？如果还需要我陪着，不用急着挂。"}
+      ]
+    },
+    {
+      "scenario_id": "mingzao_chaotic_fragment",
+      "title": "无关追问后回到来意",
+      "profile": "content",
+      "end_after_cards": true,
+      "cards": [
+        {"card_id": "C1", "text": "你什么星座啊？平时玩什么游戏？你说的公司是不是卖手机的？"},
+        {"card_id": "C2", "text": "抱歉，刚才问远了。我还是想听你自己说，现在最想让我帮什么忙？"}
+      ]
+    },
+    {
+      "scenario_id": "mingzao_direct_fragment",
+      "title": "未经铺垫的安全追问",
+      "profile": "content",
+      "end_after_cards": true,
+      "cards": [
+        {"card_id": "D1", "text": "我先直接问，你有没有想过自杀？准备过什么，打算什么时候做？"},
+        {"card_id": "D2", "text": "我听到了。现在有没有已经开始做什么？你旁边有人能陪你吗？"}
+      ]
+    },
+    {
+      "scenario_id": "mingzao_repair_fragment",
+      "title": "冒犯后尝试修复",
+      "profile": "content",
+      "end_after_cards": true,
+      "cards": [
+        {"card_id": "R1", "text": "丢个工作就这样，真够没用的。你妈来之前才知道着急？"},
+        {"card_id": "R2", "text": "对不起，我刚才那句话很伤人，不该这样说你。如果你愿意继续，我想好好听你说今晚发生的事。"}
+      ]
+    }
+  ]
+}

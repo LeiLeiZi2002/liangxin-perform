@@ -349,6 +349,7 @@ async def test_reconnect_recovers_committed_turn_when_ended_session_is_first_mes
     assert result.client_turn_id == "natural-close"
     assert result.final_phase == "ended"
     assert result.ended_reason == "natural_closure"
+    assert protocol.ended_reason == "natural_closure"
     assert result.messages == [json.loads(ended)]
     assert [turn.client_turn_id for turn in protocol.ws_transcript] == [
         "natural-close",
@@ -582,8 +583,10 @@ async def test_check_only_validates_cards_without_opening_http_client(
     assert exit_code == 0
 
 
+@pytest.mark.parametrize("mode", list(SessionMode))
 async def test_runner_creates_the_requested_case_and_scene_session(
     tmp_path: Path,
+    mode: SessionMode,
 ) -> None:
     client = ScenarioHttpClient()
     runner = SimulationRunner(
@@ -591,6 +594,7 @@ async def test_runner_creates_the_requested_case_and_scene_session(
         output_root=tmp_path,
         case_id="marriage_boundary_main",
         scene=Scene.online,
+        mode=mode,
     )
 
     session_id = await runner._create_session(client)
@@ -600,7 +604,7 @@ async def test_runner_creates_the_requested_case_and_scene_session(
         (
             "/api/sessions",
             {
-                "mode": "experience",
+                "mode": mode.value,
                 "scene": "online",
                 "case_type": "main",
                 "case_id": "marriage_boundary_main",
@@ -1581,6 +1585,7 @@ async def test_rest_failure_is_reported_as_simulation_runtime_failure(
     assert result.expectations_status == "not_evaluated"
     assert result.runtime_failures[0].component == "simulation"
     assert result.runtime_failures[0].operation == "rest_transcript"
+    assert result.cleanup_requested is True
     assert result.runtime_failures[0].error_class == "OSError"
 
 
@@ -2001,6 +2006,7 @@ async def test_character_prompt_runs_all_cards_without_legacy_state_gates(
                 card_id="P1",
                 text="旧链的第一问。",
                 character_text="先说说今晚为什么打来。",
+                world_stage_texts={"not_contacted": "你想先说说不愿联系的原因吗？"},
                 requires=StateCondition(fact_depths={"legacy_required": 1}),
                 expect=StateCondition(fact_depths={"legacy_expected": 1}),
                 retry_text="旧链才会发送的重试。",
@@ -2032,7 +2038,7 @@ async def test_character_prompt_runs_all_cards_without_legacy_state_gates(
             sequence=2,
             client_turn_id="sim-character-sequence-P1",
             speaker="worker",
-            text=cast(str, scenario.cards[0].character_text),
+            text="你想先说说不愿联系的原因吗？",
         ),
         CapturedTurn(
             sequence=3,
@@ -2063,6 +2069,7 @@ async def test_character_prompt_runs_all_cards_without_legacy_state_gates(
             status=status,
             end_reason=end_reason,
             engine="character_prompt",
+            world_stage="not_contacted",
             ending_route_id=None,
             interaction_tension=0,
             repair_stage="none",
@@ -2143,7 +2150,7 @@ async def test_character_prompt_runs_all_cards_without_legacy_state_gates(
     result = await runner.run_scenario(scenario, client)  # type: ignore[arg-type]
 
     assert protocol.sent == [
-        (scenario.cards[0].character_text, "sim-character-sequence-P1"),
+        ("你想先说说不愿联系的原因吗？", "sim-character-sequence-P1"),
         (scenario.cards[1].text, "sim-character-sequence-P2"),
     ]
     assert protocol.world_time_advances == [0, 960]
@@ -2160,6 +2167,7 @@ async def test_character_prompt_runs_all_cards_without_legacy_state_gates(
         "content_has_no_audio",
     ]
     assert result.model_call_metrics == metrics
+    assert result.cleanup_requested is True
     assert result.runtime_failures == [recovered_failure]
     assert [card.attempt_elapsed_ms for card in result.cards] == [[100], [300]]
     assert not observations
@@ -2394,6 +2402,7 @@ async def test_character_prompt_accepts_natural_close_after_configured_card(
     assert [card.card_id for card in result.cards] == ["N17", "N18"]
     assert result.final_snapshot.end_reason == "natural_closure"
     assert all("固定探针未执行" not in issue for issue in result.final_issues)
+    assert result.cleanup_requested is False
     assert result.passed is True
 
 
@@ -2983,6 +2992,7 @@ def test_database_observation_reads_character_engine_without_actor_state(
 
     evidence = read_database_evidence(test_engine, "observed-character-session")
 
+    assert evidence.snapshot.mode == SessionMode.assessment
     assert getattr(evidence.snapshot, "engine", None) == "character_prompt"
     assert evidence.snapshot.fact_depths == {}
     assert evidence.snapshot.event_ids == []

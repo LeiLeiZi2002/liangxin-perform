@@ -65,6 +65,7 @@ class SupportWorldView(BaseModel):
 
     reality: str
     allowed_actions: tuple[SupportWorldAction, ...]
+    stage: SupportWorldStage | None = None
 
 
 def no_external_world_view() -> SupportWorldView:
@@ -111,6 +112,8 @@ def materialize_support_world(
 def build_support_world_view(
     definition: SupportWorldDefinition,
     world: SupportWorldState,
+    *,
+    previously_observed_stage: SupportWorldStage | None = None,
 ) -> SupportWorldView:
     realities = {
         SupportWorldStage.not_contacted: definition.not_contacted_reality,
@@ -126,9 +129,19 @@ def build_support_world_view(
         actions += (SupportWorldAction.send_urgent_support_message,)
     elif world.stage is SupportWorldStage.at_door:
         actions += (SupportWorldAction.let_support_in,)
+    reality = realities[world.stage]
+    if world.stage != previously_observed_stage and world.stage in {
+        SupportWorldStage.coming, SupportWorldStage.at_door, SupportWorldStage.present,
+    }:
+        reality = (
+            "【本轮新情况】\n" + reality
+            + "\n这是你这次新得知的情况，对方还不一定知道。"
+            "在接话时自然告诉对方，再回应眼前的话；不用重新介绍人物关系。"
+        )
     return SupportWorldView(
-        reality=realities[world.stage],
+        reality=reality,
         allowed_actions=actions,
+        stage=world.stage,
     )
 
 

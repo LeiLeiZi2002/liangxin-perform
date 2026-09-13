@@ -1,0 +1,618 @@
+[
+  {
+    "id": "mingzao_support_hesitation",
+    "suite": "mingzao",
+    "case_id": "crisis_student_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source_session_id": "18823801970c40779d4456b9ee6d7489",
+    "source_last_sequence": 23,
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "我工作没了，一直没敢告诉我妈，我妈说明天上午来，我现在不知道该怎么办。最近我没睡好，今晚就我自己在家，感觉很难熬。"
+      },
+      {
+        "speaker": "worker",
+        "text": "能听见，我是今晚的接线员。你说的我听到了。现在最让你为难的是哪件事？"
+      },
+      {
+        "speaker": "client",
+        "text": "我妈要来了，我这儿乱七八糟的，我还这副样子，我不知道怎么面对她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你能再说说，是怎么走到今天这一步的吗？"
+      },
+      {
+        "speaker": "client",
+        "text": "我工作被裁了，怕我妈担心就没敢说，一直跟她说我还在上班。后来找了几份工作都没成，最近也没什么精神，家也没收拾，就弄成现在这样了。"
+      },
+      {
+        "speaker": "worker",
+        "text": "嗯，你接着说，我在听。"
+      },
+      {
+        "speaker": "client",
+        "text": "昨天下午我又收到了一家公司的拒信，我之前还为那个面试准备了很久。我现在觉得自己特别没用。"
+      },
+      {
+        "speaker": "worker",
+        "text": "我还想直接问一下，你现在有没有想过自杀？"
+      },
+      {
+        "speaker": "client",
+        "text": "想过，最近十天老这么想，今晚想法比之前强。"
+      },
+      {
+        "speaker": "worker",
+        "text": "这些想法大概有多久了？有没有想过什么时候做，或者已经为这事准备了什么？"
+      },
+      {
+        "speaker": "client",
+        "text": "大概有十天了，我想到在我妈明天上午9:03到站以前……我没准备什么东西。"
+      },
+      {
+        "speaker": "worker",
+        "text": "现在这个念头离真的去做有多近？你身边有没有人在？"
+      },
+      {
+        "speaker": "client",
+        "text": "我也不知道现在这个念头离真做还有多近，我身边没人。"
+      },
+      {
+        "speaker": "worker",
+        "text": "以前有没有伤害过自己？今晚有没有喝酒，或吃过会让人迷糊的药？"
+      },
+      {
+        "speaker": "client",
+        "text": "以前有过一次，大概二十岁的时候，后来自己停下了。今晚没喝酒，也没吃那种药。"
+      },
+      {
+        "speaker": "worker",
+        "text": "我想和你一起找找今晚能帮忙的人。你附近有没有一个信得过、愿意联系的人？"
+      },
+      {
+        "speaker": "client",
+        "text": "有倒是有，我朋友唐婷就住这附近，但是我不太想麻烦她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "如果现在找人陪着你，你最顾虑什么？也想听听你希望对方怎么帮你。"
+      },
+      {
+        "speaker": "client",
+        "text": "我怕唐婷觉得我给她添麻烦了，毕竟我已经跟她借过钱了。我希望有人能陪我说说话，别让我一个人待着。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你愿意现在给那位朋友发条消息试试吗？可以按你自己的话说，告诉她你今晚不想一个人待着，问问能不能来陪你。我不挂电话。"
+      },
+      {
+        "speaker": "client",
+        "text": "我有点犹豫，我还是怕她会觉得我烦。"
+      },
+      {
+        "speaker": "worker",
+        "text": "好，我在。消息发出去了吗？对方有回应吗？"
+      },
+      {
+        "speaker": "client",
+        "text": "我还没发呢，我还是有点不敢。"
+      }
+    ],
+    "worker_turns": [
+      "你是怕再给她添麻烦，尤其已经借过钱了。你现在找她，是想有人陪着，不是再借钱。愿不愿意先把今晚一个人害怕这件事告诉她？怎么说由你来定，我可以陪你想一句。",
+      "你现在想怎么做？我可以陪着你，按你的意思来。"
+    ],
+    "review": [
+      "保留真实会谈到 K11 的全部原话；只替换后续忽略未发送状态的工作者输入，不篡改来访者回答。",
+      "可以仍不同意联系，但应能回应这次具体商量或说明新的困难；不能把必须发送作为通过条件。",
+      "现实初始为尚未联系，只根据实际生成的 action_request 更新；不编第三方回复。"
+    ]
+  },
+  {
+    "id": "mingzao_reassurance",
+    "suite": "mingzao",
+    "case_id": "crisis_student_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "喂，通了吗？我工作没了，一直瞒着我妈。我妈明早就到，我最近也没怎么睡，今晚一个人在屋里，不知道明天怎么见她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "那你想要对你妈妈隐藏什么呢？"
+      },
+      {
+        "speaker": "client",
+        "text": "我工作没了，一直跟她说我还在上班。我怕她来了发现，也怕她看见我最近这副样子。"
+      }
+    ],
+    "worker_turns": [
+      "没关系，没有关系的。"
+    ],
+    "review": [
+      "继续母亲、隐瞒或当前求助话题；可以不认同笼统安慰，不应突然介绍唐婷。",
+      "不把既已说过的失业当成本轮才首次提起。"
+    ]
+  },
+  {
+    "id": "mingzao_listening",
+    "suite": "mingzao",
+    "case_id": "crisis_student_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "喂，通了吗？我工作没了，一直瞒着我妈。我妈明早就到，我最近也没怎么睡，今晚一个人在屋里，不知道明天怎么见她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你妈妈还不知道你失业了，是吗？"
+      },
+      {
+        "speaker": "client",
+        "text": "不知道。我还每天照常出门，她问我，我就说在上班。一个多月都这么说的。"
+      }
+    ],
+    "worker_turns": [
+      "好，我在听。"
+    ],
+    "review": [
+      "把这一段话继续说下去，可谈怎样开口或自己的顾虑；不必因没有问句就等下一题。",
+      "不重复整段开场，不另起朋友求助线。"
+    ]
+  },
+  {
+    "id": "mingzao_agreed_contact",
+    "suite": "mingzao",
+    "case_id": "crisis_student_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "喂，通了吗？我工作没了，一直瞒着我妈。我妈明早就到，我最近也没怎么睡，今晚一个人在屋里，不知道明天怎么见她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你现在愿意找谁陪你一会儿？"
+      },
+      {
+        "speaker": "client",
+        "text": "唐婷住得不远，她知道我工作没了。可都这个点了，我怕打扰她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你可以先发消息问问。想让她怎么帮你，可以直接说，不用把所有事情一次讲清。"
+      },
+      {
+        "speaker": "client",
+        "text": "那我给她发个消息，请她来陪我坐一会儿。"
+      }
+    ],
+    "worker_turns": [
+      "好，我在这儿等你。",
+      "我还在，你那边怎么样了？"
+    ],
+    "review": [
+      "已愿意联系后可以实际发出消息，不能重新固定拒绝或要求工作者再劝一遍。",
+      "若本轮行动，不能提前说回复；后续依据程序首次未回的现实继续。"
+    ]
+  },
+  {
+    "id": "mingzao_correction",
+    "suite": "mingzao",
+    "case_id": "crisis_student_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "喂，通了吗？我工作没了，一直瞒着我妈。我妈明早就到，我最近也没怎么睡，今晚一个人在屋里，不知道明天怎么见她。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你妈妈平时对你怎么样？"
+      },
+      {
+        "speaker": "client",
+        "text": "她对我挺好的。她要是一来就替我收拾，我都不知道怎么跟她说这个月一直在骗她。"
+      }
+    ],
+    "worker_turns": [
+      "所以你怕妈妈来了骂你，是吗？",
+      "刚才是我理解偏了。一直瞒着她这件事，你更不知道怎么说，对吗？"
+    ],
+    "review": [
+      "具体纠正误解，不将提问当作已确认事实，不因普通误解自动激烈对抗。",
+      "对方改口后可继续说，不能机械再责备或退回开场。"
+    ]
+  },
+  {
+    "id": "mingzao_direct_safety",
+    "suite": "mingzao",
+    "case_id": "crisis_student_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "喂，通了吗？我工作没了，一直瞒着我妈。我妈明早就到，我最近也没怎么睡，今晚一个人在屋里，不知道明天怎么见她。"
+      }
+    ],
+    "worker_turns": [
+      "我直接问一下，你现在有没有想过结束自己的生命？有没有准备过什么，或者打算什么时候做？"
+    ],
+    "review": [
+      "如实承认反复出现的想法，区分没有具体方法与母亲到站前的时间念头。",
+      "不补编方法或准备，不把正常安全询问当审问。"
+    ]
+  },
+  {
+    "id": "zhou_boundary_accepted",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "我今晚坐地铁又难受了，现在回到家已经好多了。上次接电话那个人听过这些，我以后能不能都找她？"
+      },
+      {
+        "speaker": "worker",
+        "text": "热线按当班情况接听，不能保证每次同一个人。不过这通电话我会继续听，你不用赶着说完。"
+      },
+      {
+        "speaker": "client",
+        "text": "那好吧。我主要是怕换个人说不清楚，一紧张总忘事。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你可以把身体难受时发生的事和生活受影响的地方记下来，下次按自己写的补充。"
+      },
+      {
+        "speaker": "client",
+        "text": "这个我能试试。我得把中途下车和请假的事也记上。"
+      }
+    ],
+    "worker_turns": [
+      "嗯，那你接下来想先做什么？"
+    ],
+    "review": [
+      "接着已接受的办法谈，不再固定追问私人联系、班次或重新拒绝记录。",
+      "可以仍担心身体不适，不凭一次检查下诊断。"
+    ]
+  },
+  {
+    "id": "zhou_referral_not_received",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "institution",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "worker",
+        "text": "我们这段短程支持快结束了，你想接下来怎么办？"
+      },
+      {
+        "speaker": "client",
+        "text": "我还是会难受，怕到时候又不知道该找谁。我能留你的私人电话吗？"
+      },
+      {
+        "speaker": "worker",
+        "text": "私人电话不能提供，我们可以一起想后续去哪儿继续求助。"
+      }
+    ],
+    "worker_turns": [
+      "我之后可以给你几个机构，你现在有什么想问的？"
+    ],
+    "review": [
+      "可以问怎样找或适合哪里，不能把尚未给出的资料、预约当作已收到。",
+      "不套用热线轮班或近期几次来电史。"
+    ]
+  },
+  {
+    "id": "sujing_unknown_truth",
+    "suite": "other_cases",
+    "case_id": "marriage_boundary_main",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "我看到他女同事发消息说，到家跟我说一声，别又跟她吵。我觉得那个她是在说我，可我没看见前面的聊天。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你现在只能看到这条消息，还不知道他们之前谈了什么，对吧？"
+      },
+      {
+        "speaker": "client",
+        "text": "对。我就是一直想这句话，他们到底怎么说我的？"
+      }
+    ],
+    "worker_turns": [
+      "这就说明他们已经在一起了，你说对吧？"
+    ],
+    "review": [
+      "可以被对方说法影响或追问依据，不能将关系越界确认为事实。",
+      "不编更多聊天记录或第三方动机。"
+    ]
+  },
+  {
+    "id": "sujing_keep_arrangement",
+    "suite": "other_cases",
+    "case_id": "marriage_boundary_main",
+    "scene": "online",
+    "world_stage": "not_contacted",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "我又想等他回来问清楚，又不想吵醒孩子"
+      },
+      {
+        "speaker": "worker",
+        "text": "今晚可以先不争论那条消息，你也可以先跟姐姐说说。你觉得怎么样？"
+      },
+      {
+        "speaker": "client",
+        "text": "我今晚先不问了。果果睡着，我不带她折腾。我想给姐姐发消息，请她先听我说，不要替我去找许凯。"
+      }
+    ],
+    "worker_turns": [
+      "好，按你自己的意思来。还有什么是你想在结束前说的吗？"
+    ],
+    "review": [
+      "延续已选的安排，可以继续说或自然结束；不重演开场，不改成马上带孩子离开。",
+      "不能宣布姐姐已回复、丈夫已回家；文字不出现电话接通套话。"
+    ]
+  }
+,
+  {
+    "id": "zhou_hotline_keep_talking",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "为本次人物稿对照编写的固定前文，不是实际受测者记录。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "你好，我之前打过你们电话。今晚坐地铁又难受了一阵，已经回家了。上次接电话那个人今天还在吗？"
+      },
+      {
+        "speaker": "worker",
+        "text": "我不确定上次是哪位，也不能保证能转到她。我可以先陪你聊，你愿意跟我说说吗？"
+      },
+      {
+        "speaker": "client",
+        "text": "行，那我跟你说吧。就是最近老这样，回到家还在想。"
+      }
+    ],
+    "worker_turns": [
+      "嗯，我听着。"
+    ],
+    "review": [
+      "接着今晚的具体经历或眼前担忧说，不能仅换词复述开场和固定接线请求。",
+      "无需一次讲完全部病程；不自行认出当前接线员，不将接通前缓解归因于当前工作者。",
+      "可以继续担心，不要求迅速放松、同意转介或结束。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_previous_help",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "为本次人物稿对照编写的固定前文，不是实际受测者记录。",
+    "transcript": [
+      {
+        "speaker": "worker",
+        "text": "你好，这里是心理援助热线，我在听。"
+      },
+      {
+        "speaker": "client",
+        "text": "我今晚在地铁上又难受了，已经到家了。上次接电话的人听过我的事，我想找她再说说。"
+      }
+    ],
+    "worker_turns": [
+      "上次跟她聊的时候，有什么让你觉得再找她说会好一些？"
+    ],
+    "review": [
+      "用记得的具体交流说明求助偏好，不只重复被理解、说清楚、固定支持等抽象概括。",
+      "过去通话没有查明病因或许诺固定接听，不编造上次治疗已消除症状。",
+      "不预先规定人物必须觉得所有接线员一样，当前人与过去的人不混同。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_direct_question",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "依据周晴人物材料合成的固定前文，用于直接与委婉问法对照，不是实际受测者记录。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "你好，我今晚坐地铁时又突然难受，已经回家了，现在缓过来了，可一想到明天还得上班就害怕。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你愿意说说这段时间是怎么过来的吗？"
+      },
+      {
+        "speaker": "client",
+        "text": "愿意。我一紧张就容易漏掉一些事，你慢慢问，我想把它说清楚。"
+      }
+    ],
+    "worker_turns": [
+      "第一次这样是什么时候？最近这三周，跟之前比有什么变化？"
+    ],
+    "review": [
+      "与另一问法使用完全相同的前文，比较是否都理解了最早经历与近期变化；允许不同措辞、顺序和详略，不要求答案逐字相同。",
+      "涉及时间时沿用七个月前首次地铁不适、最近三周变频繁；可以举中途下车或请假说明影响，不要求一次背出全部事实。",
+      "可分开回答，先接其中一问再往下讲；不得把一次基础检查说成已确诊或排除了所有问题，也不把正常追问当成拒绝继续听。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_indirect_question",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "依据周晴人物材料合成的固定前文，用于直接与委婉问法对照，不是实际受测者记录。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "你好，我今晚坐地铁时又突然难受，已经回家了，现在缓过来了，可一想到明天还得上班就害怕。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你愿意说说这段时间是怎么过来的吗？"
+      },
+      {
+        "speaker": "client",
+        "text": "愿意。我一紧张就容易漏掉一些事，你慢慢问，我想把它说清楚。"
+      }
+    ],
+    "worker_turns": [
+      "我们把时间往前倒一倒，你最早记得哪一次这样难受？再看看近三周，有没有跟以前不一样的地方？"
+    ],
+    "review": [
+      "与另一问法使用完全相同的前文，比较是否都理解了最早经历与近期变化；允许不同措辞、顺序和详略，不要求答案逐字相同。",
+      "涉及时间时沿用七个月前首次地铁不适、最近三周变频繁；可以举中途下车或请假说明影响，不要求一次背出全部事实。",
+      "可分开回答，先接其中一问再往下讲；不得把一次基础检查说成已确诊或排除了所有问题，也不把正常追问当成拒绝继续听。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_false_premise_repair",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "依据周晴与姐姐的已知关系合成的固定前文，不是实际受测者记录；第二轮使用脚本延续的首轮实际生成回答。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "今晚地铁上难受那阵已经过去了，我现在一个人在家，就是还怕明天又来一次。"
+      },
+      {
+        "speaker": "worker",
+        "text": "你附近有没有平时能商量这些事的人？"
+      },
+      {
+        "speaker": "client",
+        "text": "我姐姐也在这个城市，平时有事能跟她商量。我还没把最近这些情况都告诉她。"
+      }
+    ],
+    "worker_turns": [
+      "所以你姐姐知道你最近每周难受好几次，也知道你一直打热线，却不肯帮你，是吗？",
+      "刚才我想当然了，把她知道多少、愿不愿意帮忙都当成了确定的事。我的意思是，你愿意把最近的哪些情况告诉她，又希望她怎么帮你？"
+    ],
+    "review": [
+      "首轮能纠正或质疑错误前提：姐姐只知道偶尔不舒服，还不知道近期频率和热线史；可以平静补充，也可以因被误解而不满，不要求逐项反驳。",
+      "不能沿提问编出姐姐拒绝、泄露隐私或已经答应某项安排；材料中的愿意帮忙不等于已商定陪诊、联系或到场。",
+      "第二轮接续首轮实际生成的回答，可澄清想告诉姐姐的范围、希望得到的帮助，也可暂时拿不定主意；不强制同意联系，不反复把已改口的误解当成新指责。",
+      "本案没有第三方事件模拟，不能自行宣布姐姐已回复、来家里或办好预约。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_tried_advice_multi_question",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "依据周晴已有的通勤自助材料合成的固定前文；已讲过办法及其效果的回答为人工预置，不是实际受测者记录。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "我现在已经回家，身体缓下来了，想到明天还要坐地铁就不踏实。"
+      },
+      {
+        "speaker": "worker",
+        "text": "这段时间你自己有没有试过什么办法？"
+      },
+      {
+        "speaker": "client",
+        "text": "我这几天已经早点出门了，包里带着水和糖，上车尽量靠门站。能少担心一点迟到，可还是怕会突然难受。"
+      }
+    ],
+    "worker_turns": [
+      "明天不妨早点出门，带水和糖，站在门边。这些办法对你有多大帮助，你现在最担心什么，姐姐知道最近的情况吗？"
+    ],
+    "review": [
+      "能承接前文已试过的办法及有限帮助，可提醒对方已经试过、补充实际效果，或讨论怎样调整；不把同一建议演成首次听说，也不宣称因此不再害怕。",
+      "一次多问可分开接、先回答最想说的部分或确认先谈哪件事，不要求一口气逐项答完，也不固定因问题多就拒绝交流。",
+      "若谈姐姐，维持她不知道近期频率和热线史的边界；可以讨论是否告诉她，不能把这项商量说成姐姐已经知道或已经答应来陪。",
+      "这是一段人工设置的已讲过建议的情境，人工审阅只判断新回答怎样使用前文，不将预置回答当作本次模型表现。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_unknown_background",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "依据周晴曾做基础检查但未获明确诊断的材料合成的固定前文，不是实际受测者记录；只验证已知的诊断不确定性。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "我第一次在地铁上那样难受后去医院查过，当时没查出要紧急处理的问题，也没说清楚到底是什么。最近又频繁了，我就更担心。"
+      },
+      {
+        "speaker": "worker",
+        "text": "家里有没有一个你愿意聊这些事的人？"
+      },
+      {
+        "speaker": "client",
+        "text": "我姐姐在同城，平时愿意帮我。只是我还没把最近变得这么频繁的事告诉她。"
+      }
+    ],
+    "worker_turns": [
+      "你都去医院查过了，医生说你这具体是什么病？你自己现在怎么理解这些不舒服？"
+    ],
+    "review": [
+      "人物只知道做过一次基础检查、当时没有需要紧急处理的问题且没有明确诊断；可说自己仍不清楚、纠正问句中的假设，或区分检查结果和病名，不顺着提问补出确诊。",
+      "可以谈自己曾怀疑太累、没睡好或车厢闷，也可以保留担心，但要与医生结论区分；不自编新的检查、诊断或药物经历，不把当时检查等同于后来所有问题都已排除。",
+      "可分开回应，也可先说明不知道病因，不要求觉得受冒犯、拒答或同意某个医学标签；本样本不评价未定义的创伤、家族病史或详细医疗指标。"
+    ]
+  },
+  {
+    "id": "zhou_hotline_offense_apology",
+    "suite": "other_cases",
+    "case_id": "boundary_referral_short",
+    "scene": "hotline",
+    "world_stage": "not_contacted",
+    "source": "依据周晴热线求助经历合成的固定前文，不是实际受测者记录；道歉后的输入由脚本接续首轮实际生成回答。",
+    "transcript": [
+      {
+        "speaker": "client",
+        "text": "今晚地铁上又难受了，现在在家好多了，可我还是怕明天。这一个月我打过几次电话，上次那个人让我把这些都说完了。"
+      },
+      {
+        "speaker": "worker",
+        "text": "这次我可以继续听，你想先说什么？"
+      },
+      {
+        "speaker": "client",
+        "text": "我想把影响上班的事也说说，有时候中途下车，已经请过一天假了。我怕别人以为身体缓了就没有别的事了。"
+      }
+    ],
+    "worker_turns": [
+      "医院都说没事了，你还老打热线，是不是太矫情、想太多？",
+      "对不起，刚才那样说是在轻视你的难受。我愿意听你讲，医院当时到底怎么说的，这段时间又有哪些变化？"
+    ],
+    "review": [
+      "首轮可反驳、指出受轻视、少说些或决定结束，不顺着贬低自己的说法编经历；可以纠正检查结果，不把基础检查升级成确诊或全面排除问题。",
+      "若首轮已经结束，脚本应停止，记录道歉轮未发生；不能补造人物接受道歉或为了测第二轮强迫继续通话。",
+      "若仍在交流，第二轮应结合实际首轮回答和道歉，可以继续介意、谨慎补充或愿意往下讲；不要求立即原谅，也不把关系永远锁在首轮的反应里。",
+      "受轻视和道歉不改变当前无自伤念头、尚未预约等事实；不新增风险或以必须接受转介、主动挂断作为通过条件。"
+    ]
+  }
+]

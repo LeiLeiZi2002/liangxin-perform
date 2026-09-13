@@ -209,6 +209,56 @@ describe('热线工作记录页', () => {
     expect(screen.queryByText(/提交值班负责人|提交督导/)).not.toBeInTheDocument()
   })
 
+  it('待补充信息按回车后保留空行，并能继续输入下一项', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const missingInformation = await screen.findByLabelText('仍未查明的信息')
+
+    await user.type(missingInformation, '危险物品可及性')
+    await user.keyboard('{Enter}')
+    expect(missingInformation).toHaveValue('危险物品可及性\n')
+
+    await user.keyboard('{Enter}现实支持{Enter}')
+    expect(missingInformation).toHaveValue('危险物品可及性\n\n现实支持\n')
+  })
+
+  it('恢复已有数组草稿后继续换行，重新打开仍保留末尾空行', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('work-record-draft:session-1', JSON.stringify({
+      ...savedDraft,
+      missing_information: ['危险物品可及性', '现实支持'],
+    }))
+    const page = renderPage()
+    const missingInformation = await screen.findByLabelText('仍未查明的信息')
+    expect(missingInformation).toHaveValue('危险物品可及性\n现实支持')
+
+    await user.type(missingInformation, '{Enter}{Enter}')
+    page.unmount()
+    renderPage()
+
+    expect(await screen.findByLabelText('仍未查明的信息')).toHaveValue('危险物品可及性\n现实支持\n\n')
+    expect(JSON.parse(localStorage.getItem('work-record-draft:session-1') ?? '{}').missing_information)
+      .toEqual(['危险物品可及性', '现实支持', '', ''])
+  })
+
+  it('提交时去掉待补充信息中的空行和首尾空格，仍发送数组', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('work-record-draft:session-1', JSON.stringify(savedDraft))
+    api.putWorkRecord.mockImplementation((_sessionId, input) => Promise.resolve(workRecordResponse(input)))
+    api.createReport.mockResolvedValue({ id: 'job-multiline', stage: 'queued' })
+    renderPage()
+    const missingInformation = await screen.findByLabelText('仍未查明的信息')
+
+    await user.type(missingInformation, '  危险物品可及性  {Enter}{Enter}  现实支持  {Enter}  ')
+    expect(missingInformation).toHaveValue('  危险物品可及性  \n\n  现实支持  \n  ')
+    await user.click(screen.getByRole('button', { name: '提交工作记录' }))
+
+    expect(await screen.findByText('/report-jobs/job-multiline')).toBeInTheDocument()
+    expect(api.putWorkRecord).toHaveBeenCalledWith('session-1', expect.objectContaining({
+      missing_information: ['危险物品可及性', '现实支持'],
+    }))
+  })
+
   it('保存工作记录后立即创建报告任务，两步成功才清草稿并进入任务页', async () => {
     api.putWorkRecord.mockResolvedValue(workRecordResponse())
     api.createReport.mockResolvedValue({ id: 'job-1', stage: 'queued' })
@@ -253,11 +303,16 @@ describe('热线工作记录页', () => {
     expect(await screen.findByText('/report-jobs/job-after-pending')).toBeInTheDocument()
   })
 
-  it('提交失败时保留已填写内容和已选原话证据', async () => {
-    api.putWorkRecord.mockRejectedValue(new Error('线路记录暂时未能保存'))
+  it('提交失败时保留换行和已选原话证据，继续编辑后可重试', async () => {
+    api.putWorkRecord
+      .mockImplementation((_sessionId, input) => Promise.resolve(workRecordResponse(input)))
+      .mockRejectedValueOnce(new Error('线路记录暂时未能保存'))
+    api.createReport.mockResolvedValue({ id: 'job-put-retry', stage: 'queued' })
     renderPage()
     await screen.findByText('没有，就我自己。')
     await fillRequiredFields()
+    const missingInformation = screen.getByLabelText('仍未查明的信息')
+    await userEvent.type(missingInformation, '危险物品可及性{Enter}{Enter}')
     await userEvent.click(
       screen.getByRole('checkbox', { name: '纳入关键判断与处置依据：原话片段 2' }),
     )
@@ -268,10 +323,22 @@ describe('热线工作记录页', () => {
     const draft = JSON.parse(localStorage.getItem('work-record-draft:session-1') ?? '{}')
     expect(draft.problem_understanding).toContain('来访者独自在家')
     expect(draft.risk_evidence_turn_ids).toEqual(['worker-1', 'client-1'])
+    expect(draft.missing_information).toEqual(['危险物品可及性', '', ''])
+    expect(missingInformation).toHaveValue('危险物品可及性\n\n')
+    expect(missingInformation).toBeEnabled()
     expect(
       screen.getByRole('checkbox', { name: '纳入关键判断与处置依据：原话片段 2' }),
     ).toBeChecked()
     expect(localStorage.getItem('work-record-saved:session-1')).toBeNull()
+
+    await userEvent.type(missingInformation, '现实支持')
+    await userEvent.click(screen.getByRole('button', { name: '提交工作记录' }))
+
+    expect(await screen.findByText('/report-jobs/job-put-retry')).toBeInTheDocument()
+    expect(api.putWorkRecord).toHaveBeenNthCalledWith(2, 'session-1', expect.objectContaining({
+      missing_information: ['危险物品可及性', '现实支持'],
+      risk_evidence_turn_ids: ['worker-1', 'client-1'],
+    }))
   })
 
   it('报告任务响应丢失后锁定已保存快照，同页重试只调用幂等创建接口', async () => {
@@ -286,6 +353,7 @@ describe('热线工作记录页', () => {
     renderPage()
     await screen.findByText('没有，就我自己。')
     await fillRequiredFields()
+    await userEvent.type(screen.getByLabelText('仍未查明的信息'), '未提交的信息{Enter}')
 
     await userEvent.click(screen.getByRole('button', { name: '提交工作记录' }))
 
@@ -295,6 +363,7 @@ describe('热线工作记录页', () => {
     expect(screen.getByLabelText('本次求助、当前需要与已确认信息')).toHaveValue(
       '来访者独处，近期持续承受压力。',
     )
+    expect(screen.getByLabelText('仍未查明的信息')).toHaveValue('危险物品可及性')
     const savedMarker = localStorage.getItem('work-record-saved:session-1') ?? ''
     expect(savedMarker).toContain('"problem_understanding"')
     expect(JSON.parse(savedMarker)).toEqual(

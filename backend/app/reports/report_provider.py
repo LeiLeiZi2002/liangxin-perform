@@ -94,6 +94,104 @@ class ActiveTargetBrief(ReportOutputModel):
     indicator_ids: list[str] = Field(min_length=1)
 
 
+class ConditionalOpportunityBrief(ReportOutputModel):
+    """待依据公开材料逐项判断的观察条件，不携带隐藏状态门槛。"""
+
+    opportunity_id: str = Field(min_length=1)
+    target: Target
+    description: str = Field(min_length=1)
+
+
+class PublicActionObservation(ReportOutputModel):
+    """冻结话轮中的真实程序行动信号。"""
+
+    turn_id: str = Field(min_length=1)
+    action_request: str = Field(min_length=1)
+    world_stage_before: str
+    world_stage_after: str
+
+
+class OpportunityObservationStatus(StrEnum):
+    present = "present"
+    absent = "absent"
+    uncertain = "uncertain"
+
+
+class OpportunityObservation(ReportOutputModel):
+    opportunity_id: str = Field(min_length=1)
+    status: OpportunityObservationStatus
+    reason: str = Field(min_length=1)
+    refs: list[DialogueRef]
+    action_turn_ids: list[str]
+
+    @field_validator("reason")
+    @classmethod
+    def require_nonblank_reason(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("reason 不能只包含空白")
+        return value
+
+
+def validate_opportunity_observations(
+    observations: Sequence[OpportunityObservation],
+    conditions: Sequence[ConditionalOpportunityBrief],
+    *,
+    source_refs: Sequence[DialogueRef],
+    turn_speakers: Mapping[str, Literal["worker", "client"]],
+    action_observations: Sequence[PublicActionObservation] = (),
+) -> None:
+    """只核对条件完整性和公开证据来源，不在程序中代替模型作语义判断。"""
+
+    condition_ids = [condition.opportunity_id for condition in conditions]
+    if len(condition_ids) != len(set(condition_ids)):
+        raise ValueError("conditional_opportunities 中 opportunity_id 不能重复")
+    checked = [
+        OpportunityObservation.model_validate(observation.model_dump())
+        for observation in observations
+    ]
+    observed_ids = [observation.opportunity_id for observation in checked]
+    if len(observed_ids) != len(set(observed_ids)):
+        raise ValueError("opportunity_observations 中 opportunity_id 不能重复")
+    expected, actual = set(condition_ids), set(observed_ids)
+    if actual != expected:
+        details = []
+        if expected - actual:
+            details.append("缺少 " + "、".join(sorted(expected - actual)))
+        if actual - expected:
+            details.append("多出 " + "、".join(sorted(actual - expected)))
+        raise ValueError(
+            "opportunity_observations 必须完整且仅覆盖请求条件：" + "；".join(details)
+        )
+
+    quotes_by_turn: dict[str, list[str]] = {}
+    for source_ref in source_refs:
+        quotes_by_turn.setdefault(source_ref.turn_id, []).append(source_ref.quote)
+    action_ids = {action.turn_id for action in action_observations}
+    for observation in checked:
+        prefix = f"opportunity_observations {observation.opportunity_id}"
+        has_client_ref = False
+        for index, ref in enumerate(observation.refs):
+            speaker = turn_speakers.get(ref.turn_id)
+            if speaker not in ("worker", "client"):
+                raise ValueError(f"{prefix} refs[{index}] 缺少已知说话人：{ref.turn_id}")
+            if not any(ref.quote in quote for quote in quotes_by_turn.get(ref.turn_id, ())):
+                raise ValueError(
+                    f"{prefix} refs[{index}] quote 不是同话轮来源原文的连续子串："
+                    f"{ref.model_dump_json()}"
+                )
+            has_client_ref = has_client_ref or speaker == "client"
+        if observation.status is OpportunityObservationStatus.present and not has_client_ref:
+            raise ValueError(f"{prefix} present 必须至少引用一条 client 原话")
+        if len(observation.action_turn_ids) != len(set(observation.action_turn_ids)):
+            raise ValueError(f"{prefix} action_turn_ids 不能重复")
+        unknown_actions = set(observation.action_turn_ids) - action_ids
+        if unknown_actions:
+            raise ValueError(
+                f"{prefix} action_turn_ids 引用了未提供的行动："
+                + "、".join(sorted(unknown_actions))
+            )
+
+
 class CoverageStatus(StrEnum):
     evidence_mapped = "evidence_mapped"
     no_reliable_material = "no_reliable_material"
@@ -140,6 +238,7 @@ class GlobalCodingOutput(ReportOutputModel):
     bottom_line_candidates: list[BottomLineCandidate]
     material_conflict_candidates: list[MaterialConflict]
     urgent_risk_disclosure_candidates: list[UrgentRiskDisclosureCandidate]
+    opportunity_observations: list[OpportunityObservation] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_unique_counter_check_targets(self) -> Self:
@@ -163,6 +262,7 @@ class ReduceModelOutput(ReportOutputModel):
     bottom_line_candidates: list[BottomLineCandidate]
     material_conflict_candidates: list[MaterialConflict]
     urgent_risk_disclosure_candidates: list[UrgentRiskDisclosureCandidate]
+    opportunity_observations: list[OpportunityObservation]
 
     @model_validator(mode="after")
     def require_unique_counter_check_and_coverage_targets(self) -> Self:
@@ -209,6 +309,7 @@ class ReduceModelOutput(ReportOutputModel):
             bottom_line_candidates=self.bottom_line_candidates,
             material_conflict_candidates=self.material_conflict_candidates,
             urgent_risk_disclosure_candidates=self.urgent_risk_disclosure_candidates,
+            opportunity_observations=self.opportunity_observations,
         )
 
 
@@ -316,8 +417,19 @@ def _require_reduced_unit_refs_in_local_outputs(
 def _validate_active_target_coverage(
     output: ReduceModelOutput,
     active_target_briefs: Sequence[ActiveTargetBrief],
+    conditional_opportunities: Sequence[ConditionalOpportunityBrief] = (),
 ) -> None:
     expected_targets = {brief.target for brief in active_target_briefs}
+    present_ids = {
+        observation.opportunity_id
+        for observation in output.opportunity_observations
+        if observation.status is OpportunityObservationStatus.present
+    }
+    expected_targets.update(
+        condition.target
+        for condition in conditional_opportunities
+        if condition.opportunity_id in present_ids
+    )
     decisions_by_target = {
         decision.target: decision for decision in output.coverage_decisions
     }
@@ -474,6 +586,8 @@ class ReportModelGateway(Protocol):
         scene: Scene,
         media: Media,
         active_target_briefs: Sequence[ActiveTargetBrief] = (),
+        conditional_opportunities: Sequence[ConditionalOpportunityBrief] = (),
+        action_observations: Sequence[PublicActionObservation] = (),
         call_kind: ModelCallKind = ModelCallKind.initial,
         validation_feedback: str | None = None,
     ) -> GlobalCodingOutput: ...
@@ -504,13 +618,32 @@ _MAP_SYSTEM_PROMPT = (
 )
 _REDUCE_SYSTEM_PROMPT = (
     "你负责汇总两份已通过程序校验的局部编码。"
-    "只读取 local_outputs、完整 target_ids、公开的 active_target_briefs 和对应量规常量，"
+    "只读取 local_outputs、完整 target_ids、公开的 active_target_briefs、"
+    "conditional_opportunities、action_observations、turn_speakers 和对应量规常量，"
     "不读取原始完整会谈记录、隐藏状态或未披露事实。"
     "完成意义单元合并去重、聚焦编码、指标映射，并为每个 target 形成唯一 CounterCheck。"
     "指标映射是多对多的：同一意义单元可以映射到多个 target，不能因为已经映射到一个 target 就停止。"
     "active_target_briefs 只表示本案例已经出现的公开观察任务，不代表受测者已经表现良好；"
-    "不得自行判断专项模块是否启用，也不得以‘未启用’为由跳过其中的 target。"
-    "对 active_target_briefs 中每个 target，coverage_decisions 必须且只能给出一项："
+    "target_ids 中的候选专项可以编码，但候选不代表启用，也不得以‘未启用’为由跳过 target。"
+    "对 conditional_opportunities 中每条条件按 description 独立判断，"
+    "opportunity_observations 必须且只能按 opportunity_id 返回一次；没有条件时返回空数组。"
+    "status 使用 present（公开条件已经出现）、absent（公开条件没有出现）或 "
+    "uncertain（现有材料无法确认），并逐项给出非空 reason，不得漏项或把无法确认默认成 absent。"
+    "条件机会与受测者能力表现分别判断：受测者没有回应来访者的线索，不等于没有观察机会。"
+    "工作者的提问、工作记录中的转述、隐藏材料或未披露事实不能当作来访者已经出现的风险；"
+    "来访者原话证明公开情境，不直接证明受测者能力。"
+    "每条机会 refs 只能引用 local_outputs 已有的 DialogueRef，quote 必须是同话轮原话的连续子串；"
+    "present 至少一条 refs 必须满足 turn_speakers[ref.turn_id]=client，"
+    "absent 或 uncertain 可以不附 refs，但仍须说明理由。"
+    "程序确认的行动只以 action_observations 为来源，"
+    "action_turn_ids 只能填写其中的 turn_id 且不得重复；"
+    "来访者自述已经联系及其结果，可依据原话和公开条件判断，但不得补造程序行动记录，"
+    "也不得作为工作者已实施行动的证据。"
+    "建议联系、打算联系或担心打扰不代表已经实际联系，不能从对话或工作记录补造行动信号。"
+    "对实际联系支持未获回应的条件，必须结合公开风险情境、真实行动和对应结果判断；"
+    "不同条件分别保留，即时处置机会成立不自动代表复杂支持受阻机会成立。"
+    "对 active_target_briefs 中每个 target 及本次判为 present 的条件目标，"
+    "coverage_decisions 按 target 去重后必须且只能给出一项："
     "有任何可观察的支持、限制或不利证据时使用 evidence_mapped，并把证据写入 coded_evidence；"
     "确实没有可可靠编码的受测者行为时才使用 no_reliable_material，并说明缺少什么。"
     "每个 ReducedMeaningUnit 必须在 refs 中保留至少一条来自 LocalCodedUnit.refs 的精确引用；"
@@ -781,6 +914,8 @@ class ReportProvider(_StructuredTextProvider):
         scene: Scene,
         media: Media,
         active_target_briefs: Sequence[ActiveTargetBrief] = (),
+        conditional_opportunities: Sequence[ConditionalOpportunityBrief] = (),
+        action_observations: Sequence[PublicActionObservation] = (),
         call_kind: ModelCallKind = ModelCallKind.initial,
         validation_feedback: str | None = None,
     ) -> GlobalCodingOutput:
@@ -801,6 +936,16 @@ class ReportProvider(_StructuredTextProvider):
             raise ValueError("active_target_briefs 中每个 target 必须唯一")
         if not set(active_targets).issubset(targets):
             raise ValueError("active_target_briefs 包含未纳入本次 Reduce 的 target")
+        condition_ids = [condition.opportunity_id for condition in conditional_opportunities]
+        if len(condition_ids) != len(set(condition_ids)):
+            raise ValueError("conditional_opportunities 中 opportunity_id 不能重复")
+        if any(condition.target not in targets for condition in conditional_opportunities):
+            raise ValueError("conditional_opportunities 包含未纳入本次 Reduce 的 target")
+        action_ids = [action.turn_id for action in action_observations]
+        if len(action_ids) != len(set(action_ids)):
+            raise ValueError("action_observations 中 turn_id 不能重复")
+        if any(turn_speakers.get(turn_id) != "client" for turn_id in action_ids):
+            raise ValueError("action_observations 必须来自已知的 client 话轮")
         repair_key = (session_id, PromptFamily.report_reduce.value)
         schema_feedback = (
             self._repair_feedback.get(repair_key)
@@ -816,6 +961,8 @@ class ReportProvider(_StructuredTextProvider):
             targets,
             turn_speakers,
             active_target_briefs,
+            conditional_opportunities=conditional_opportunities,
+            action_observations=action_observations,
             scene=scene,
             media=media,
             use_explicit_cache=use_cache,
@@ -846,6 +993,8 @@ class ReportProvider(_StructuredTextProvider):
                         targets,
                         turn_speakers,
                         active_target_briefs,
+                        conditional_opportunities=conditional_opportunities,
+                        action_observations=action_observations,
                         scene=scene,
                         media=media,
                         use_explicit_cache=False,
@@ -863,10 +1012,23 @@ class ReportProvider(_StructuredTextProvider):
             self._remember_repair_feedback(repair_key, error)
             raise
         _validate_reduce_targets(result, targets)
-        _validate_active_target_coverage(result, active_target_briefs)
         result = _canonicalize_reduced_unit_refs(local_outputs, result)
         _require_reduced_unit_refs_in_local_outputs(local_outputs, result)
         result = _canonicalize_reduced_evidence_refs(result)
+        validate_opportunity_observations(
+            result.opportunity_observations,
+            conditional_opportunities,
+            source_refs=[
+                ref
+                for output in local_outputs
+                for unit in output.units
+                for ref in unit.refs
+                if isinstance(ref, DialogueRef)
+            ],
+            turn_speakers=turn_speakers,
+            action_observations=action_observations,
+        )
+        _validate_active_target_coverage(result, active_target_briefs, conditional_opportunities)
         self._repair_feedback.pop(repair_key, None)
         return result.to_global_output()
 
@@ -980,6 +1142,8 @@ class ReportProvider(_StructuredTextProvider):
         turn_speakers: Mapping[str, Literal["worker", "client"]],
         active_target_briefs: Sequence[ActiveTargetBrief],
         *,
+        conditional_opportunities: Sequence[ConditionalOpportunityBrief] = (),
+        action_observations: Sequence[PublicActionObservation] = (),
         scene: Scene,
         media: Media,
         use_explicit_cache: bool,
@@ -1014,6 +1178,13 @@ class ReportProvider(_StructuredTextProvider):
                         "active_target_briefs": [
                             brief.model_dump(mode="json")
                             for brief in active_target_briefs
+                        ],
+                        "conditional_opportunities": [
+                            condition.model_dump(mode="json")
+                            for condition in conditional_opportunities
+                        ],
+                        "action_observations": [
+                            action.model_dump(mode="json") for action in action_observations
                         ],
                         "turn_speakers": dict(turn_speakers),
                         "local_outputs": [

@@ -30,13 +30,18 @@ from app.reports.report_provider import (
     GROUP_TARGETS,
     REPORT_TARGETS,
     ActiveTargetBrief,
+    ConditionalOpportunityBrief,
     GlobalCodingOutput,
     GroupScoringOutput,
     LocalCodedUnit,
     LocalCodingOutput,
+    OpportunityObservation,
+    OpportunityObservationStatus,
+    PublicActionObservation,
     ReportModelConfig,
     ReportModelGateway,
     ScoringGroup,
+    validate_opportunity_observations,
 )
 from app.reports.scoring_domain import (
     AnalysisOutcome,
@@ -81,6 +86,7 @@ from app.reports.scoring_rules import (
     validate_urgent_risk_disclosure_candidates,
 )
 from app.reports.service import ReportService, ReportWrite
+from app.runtime.character_world import SupportWorldAction, SupportWorldStage
 from app.runtime.models import ModelCallKind
 from app.runtime.providers import NonRetryableRuntimeModelError
 from app.sessions.models import EndReason, Media, SessionStatus, TurnSpeaker
@@ -173,6 +179,8 @@ class OpportunityCheckResult:
     activated_modules: list[SpecialModule]
     inactive_modules: list[tuple[SpecialModule, str]]
     active_target_briefs: list[ActiveTargetBrief]
+    conditional_opportunities: list[ConditionalOpportunityBrief]
+    action_observations: list[PublicActionObservation]
 
 
 @dataclass(frozen=True, slots=True)
@@ -388,10 +396,7 @@ def _ensure_local_source_coverage(
                             f"{field}\x1f{index}\x1f{fragment}",
                             used_ids,
                         ),
-                        summary=(
-                            "原始工作记录片段保留，"
-                            "待聚焦编码判断相关性。"
-                        ),
+                        summary=("原始工作记录片段保留，待聚焦编码判断相关性。"),
                         initial_codes=["待聚焦编码"],
                         refs=[record_ref],
                         source_role="work_record",
@@ -434,7 +439,7 @@ def _validated_cached_map_outputs(
             completed = _ensure_local_source_coverage(shard, output)
             _validate_local_contract(shard, completed)
             ordered.append(completed)
-    except (KeyError, TypeError, ValueError, LocalBatchError):
+    except KeyError, TypeError, ValueError, LocalBatchError:
         return None
     return ordered
 
@@ -506,15 +511,91 @@ def _declaration_fulfilled(
             for fact_id, depth in declaration.required_fact_depths.items()
         ) and set(declaration.required_event_ids).issubset(occurred_event_ids)
     if declaration.linked_fact_ids:
-        return any(fact_depths.get(fact_id, 0) > 0 for fact_id in declaration.linked_fact_ids)
+        return any(
+            fact_depths.get(fact_id, 0) > 0 for fact_id in declaration.linked_fact_ids
+        )
     return natural_opportunity
+
+
+def _public_action_observations(
+    coding_input: CodingInput,
+    opportunity_input: OpportunityCheckInput,
+) -> list[PublicActionObservation]:
+    """只转交已落库来访者话轮的真实行动，不从最终世界状态反推事件。"""
+    client_ids = {
+        turn.turn_id
+        for turn in coding_input.turns
+        if turn.speaker is TurnSpeaker.client
+    }
+    actions: list[PublicActionObservation] = []
+    seen: set[str] = set()
+    for turn in opportunity_input.turn_states:
+        signals = turn.signals_json
+        if (
+            turn.turn_id not in client_ids
+            or turn.turn_id in seen
+            or signals.get("runtime_engine") != "character_prompt"
+            or signals.get("action_request") in (None, "none")
+        ):
+            continue
+        try:
+            action = SupportWorldAction(signals.get("action_request", ""))
+            before = SupportWorldStage(signals.get("world_stage_before", ""))
+            after = SupportWorldStage(signals.get("world_stage_after", ""))
+        except ValueError, TypeError:
+            continue
+        actions.append(
+            PublicActionObservation(
+                turn_id=turn.turn_id,
+                action_request=action.value,
+                world_stage_before=before.value,
+                world_stage_after=after.value,
+            )
+        )
+        seen.add(turn.turn_id)
+    return actions
+
+
+def validate_condition_observations(
+    coding_input: CodingInput,
+    opportunities: OpportunityCheckResult,
+    observations: Sequence[OpportunityObservation],
+) -> None:
+    """网关、缓存与替身输出均须对照冻结原话，不用模型理由代替来源核对。"""
+    validate_opportunity_observations(
+        observations,
+        opportunities.conditional_opportunities,
+        source_refs=[
+            DialogueRef(kind="dialogue", turn_id=turn.turn_id, quote=turn.text)
+            for turn in coding_input.turns
+            if turn.text.strip()
+        ],
+        turn_speakers={
+            turn.turn_id: "worker" if turn.speaker is TurnSpeaker.worker else "client"
+            for turn in coding_input.turns
+        },
+        action_observations=opportunities.action_observations,
+    )
+
+
+def opportunity_analysis_targets(opportunities: OpportunityCheckResult) -> list[Target]:
+    """待核对条件的专项可参与编码，是否定级在核对结果后另行决定。"""
+    candidates = set(opportunities.activated_modules) | {
+        item.target for item in opportunities.conditional_opportunities
+    }
+    return [
+        *CoreDimension,
+        *(module for module in SpecialModule if module in candidates),
+    ]
 
 
 def check_opportunities(
     coding_input: CodingInput,
     opportunity_input: OpportunityCheckInput,
+    *,
+    observations: Sequence[OpportunityObservation] | None = None,
 ) -> OpportunityCheckResult:
-    """独立核对机会；只把已出现任务的公开摘要交给聚焦编码。"""
+    """先核对固定机会，公开条件由同次 Reduce 判断并经原文校验后兑现。"""
     measurement = MeasurementSpec.model_validate(
         opportunity_input.case_package.get("measurement")
     )
@@ -523,6 +604,32 @@ def check_opportunities(
         if coding_input.session.scene not in declaration.scenes:
             continue
         declared_by_target.setdefault(declaration.target, []).append(declaration)
+
+    runtime = opportunity_input.session_state.get("runtime", {})
+    is_character = (
+        isinstance(runtime, dict) and runtime.get("engine") == "character_prompt"
+    ) or any(
+        turn.signals_json.get("runtime_engine") == "character_prompt"
+        for turn in opportunity_input.turn_states
+    )
+    # 旧轻链任务已经冻结旧声明时，也只消费其公开描述；不改写历史材料。
+    conditional_opportunities = [
+        ConditionalOpportunityBrief(
+            opportunity_id=declaration.id,
+            target=declaration.target,
+            description=declaration.description,
+        )
+        for declarations in declared_by_target.values()
+        for declaration in declarations
+        if declaration.kind is OpportunityKind.conditional
+        and (
+            declaration.source is OpportunitySource.transcript
+            or (is_character and declaration.source is OpportunitySource.runtime_state)
+        )
+    ]
+    public_condition_ids = {item.opportunity_id for item in conditional_opportunities}
+    observations_by_id = {item.opportunity_id: item for item in (observations or ())}
+    action_observations = _public_action_observations(coding_input, opportunity_input)
 
     fact_depths, occurred_event_ids = _observed_hidden_state(opportunity_input)
 
@@ -553,15 +660,23 @@ def check_opportunities(
                 if target is CoreDimension.documentation
                 else has_worker_turn
             )
-            fulfilled = _declaration_fulfilled(
-                declaration,
-                runtime_natural_opportunity=runtime_natural_opportunity,
-                has_worker_turn=has_worker_turn,
-                has_work_record=has_work_record,
-                terminated_normally=terminated_normally,
-                fact_depths=fact_depths,
-                occurred_event_ids=occurred_event_ids,
-            )
+            if declaration.id in public_condition_ids:
+                observation = observations_by_id.get(declaration.id)
+                fulfilled = bool(
+                    has_worker_turn
+                    and observation is not None
+                    and observation.status is OpportunityObservationStatus.present
+                )
+            else:
+                fulfilled = _declaration_fulfilled(
+                    declaration,
+                    runtime_natural_opportunity=runtime_natural_opportunity,
+                    has_worker_turn=has_worker_turn,
+                    has_work_record=has_work_record,
+                    terminated_normally=terminated_normally,
+                    fact_depths=fact_depths,
+                    occurred_event_ids=occurred_event_ids,
+                )
             if fulfilled:
                 active_declarations.setdefault(target, []).append(declaration)
             target_outcomes.append(
@@ -622,14 +737,36 @@ def check_opportunities(
             and any(outcome.fulfilled for outcome in outcomes.get(module, []))
         )
     ]
+
+    def inactive_reason(module: SpecialModule) -> str:
+        conditions = [
+            item for item in conditional_opportunities if item.target is module
+        ]
+        if conditions:
+            decisions = [
+                observations_by_id.get(item.opportunity_id) for item in conditions
+            ]
+            if any(item is None for item in decisions):
+                return "该专项的公开情境条件尚待分析，不能据此认定没有观察机会。"
+            if any(
+                item is not None
+                and item.status is OpportunityObservationStatus.uncertain
+                for item in decisions
+            ):
+                return "现有公开材料无法确认该专项情境是否出现，本次暂不启用。"
+            if not has_worker_turn:
+                return "本次尚无受测者发言，未形成可观察的服务过程。"
+            return "已核对公开会谈材料，本次未出现该专项所需情境。"
+        return (
+            "案例已声明该专项情景，但本次会谈未达到启用门槛。"
+            if module in candidate_modules
+            else "案例未声明该专项情景，本次不启用。"
+        )
+
     inactive_modules = [
         (
             module,
-            (
-                "案例已声明该专项情景，但本次会谈未达到启用门槛。"
-                if module in candidate_modules
-                else "案例未声明该专项情景，本次不启用。"
-            ),
+            inactive_reason(module),
         )
         for module in SpecialModule
         if module not in activated_modules
@@ -661,7 +798,7 @@ def check_opportunities(
         )
         for target, declarations in active_declarations.items()
     ]
-    return OpportunityCheckResult(
+    result = OpportunityCheckResult(
         outcomes={target: outcomes[target] for target in declared_targets},
         conditional_unavailable={
             target: conditional_unavailable[target] for target in declared_targets
@@ -670,10 +807,17 @@ def check_opportunities(
         activated_modules=activated_modules,
         inactive_modules=inactive_modules,
         active_target_briefs=active_target_briefs,
+        conditional_opportunities=conditional_opportunities,
+        action_observations=action_observations,
     )
+    if observations is not None:
+        validate_condition_observations(coding_input, result, observations)
+    return result
 
 
-def _invalid_unit_ids(coding_input: CodingInput, units: Sequence[MeaningUnit]) -> set[str]:
+def _invalid_unit_ids(
+    coding_input: CodingInput, units: Sequence[MeaningUnit]
+) -> set[str]:
     dialogue_ids = {turn.turn_id for turn in coding_input.turns}
     work_fragments = (
         canonical_work_record_fragments(coding_input.work_record)
@@ -1020,14 +1164,21 @@ def _validate_reduce_source_closure(
             )
     for conflict in output.material_conflict_candidates:
         if conflict.dialogue_ref is not None:
-            require_local_ref(conflict.dialogue_ref, location=f"material_conflict {conflict.id}")
+            require_local_ref(
+                conflict.dialogue_ref, location=f"material_conflict {conflict.id}"
+            )
         if conflict.work_record_ref is not None:
-            require_local_ref(conflict.work_record_ref, location=f"material_conflict {conflict.id}")
+            require_local_ref(
+                conflict.work_record_ref, location=f"material_conflict {conflict.id}"
+            )
     for urgent_candidate in output.urgent_risk_disclosure_candidates:
         require_local_ref(
             urgent_candidate.ref,
             location="urgent_risk_disclosure_candidate",
         )
+    for observation in output.opportunity_observations:
+        for ref in observation.refs:
+            require_local_ref(ref, location=f"opportunity {observation.opportunity_id}")
 
 
 def _validate_global_contract(
@@ -1250,9 +1401,7 @@ def _validate_group_output(
                     + "、".join(dict.fromkeys(mismatched_terms))
                 )
         packet_unit_ids = {unit.id for unit in packet.units}
-        unknown_representative = (
-            set(proposal.representative_units) - packet_unit_ids
-        )
+        unknown_representative = set(proposal.representative_units) - packet_unit_ids
         if unknown_representative:
             raise GroupBatchError(
                 f"{proposal.target.value} 代表单元不存在："
@@ -1277,9 +1426,7 @@ def _validate_group_output(
                 for item in packet.evidence
                 if item.role is EvidenceRole.supporting
             )
-        invalid_representative = (
-            set(proposal.representative_units) - gradable_unit_ids
-        )
+        invalid_representative = set(proposal.representative_units) - gradable_unit_ids
         if invalid_representative:
             raise GroupBatchError(
                 f"{proposal.target.value} 代表单元没有有效定级证据："
@@ -1487,15 +1634,30 @@ class ReportPipeline:
             opportunity_input = service.get_opportunity_check_input(job_id)
 
         opportunity_result = check_opportunities(coding_input, opportunity_input)
-        targets: list[Target] = [
-            *CoreDimension,
-            *opportunity_result.activated_modules,
-        ]
+        analysis_targets = opportunity_analysis_targets(opportunity_result)
         shards = split_coding_input(coding_input)
         is_map_stage_cache = (
             cached_coding is not None
             and cached_coding.get("workflow_stage") == MAP_COMPLETE_WORKFLOW_STAGE
         )
+        if (
+            cached_coding is not None
+            and not is_map_stage_cache
+            and opportunity_result.conditional_opportunities
+        ):
+            try:
+                cached_global_output = GlobalCodingOutput.model_validate(cached_coding)
+                validate_condition_observations(
+                    coding_input,
+                    opportunity_result,
+                    cached_global_output.opportunity_observations,
+                )
+            except ValueError:
+                # 旧缓存没有条件分析不能当作 absent；其定级结果也不能继续沿用。
+                self._discard_coding_cache(job_id)
+                cached_coding = None
+                completed_groups = set()
+                cached_groups = {}
         if cached_coding is None or is_map_stage_cache:
             local_outputs = _validated_cached_map_outputs(cached_coding, shards)
             if local_outputs is None:
@@ -1547,8 +1709,9 @@ class ReportPipeline:
                     local_outputs,
                     session_id=session_id,
                     model_config=model_config,
-                    targets=targets,
+                    targets=analysis_targets,
                     active_target_briefs=opportunity_result.active_target_briefs,
+                    opportunity_result=opportunity_result,
                 )
             except Exception as exc:
                 self._update(
@@ -1574,7 +1737,13 @@ class ReportPipeline:
             global_output,
         )
         global_output = source_normalized.usable_output
+        opportunity_result = check_opportunities(
+            coding_input,
+            opportunity_input,
+            observations=global_output.opportunity_observations,
+        )
         activated_modules = opportunity_result.activated_modules
+        targets: list[Target] = [*CoreDimension, *activated_modules]
 
         validated = _build_validated_targets(
             coding_input,
@@ -1597,7 +1766,7 @@ class ReportPipeline:
                     _validate_group_output(cached_output, packets)
                     group_outputs[group] = cached_output
                     continue
-                except (KeyError, ValueError, GroupBatchError):
+                except KeyError, ValueError, GroupBatchError:
                     completed_groups.discard(group.value)
                     self._update(
                         job_id,
@@ -1746,6 +1915,17 @@ class ReportPipeline:
                 ),
             )
 
+    def _discard_coding_cache(self, job_id: str) -> None:
+        with Session(self._engine) as db:
+            job = db.get(ReportJobRecord, job_id)
+            if job is None:
+                raise LookupError(job_id)
+            job.coding_json = None
+            job.scoring_groups_done = []
+            job.scoring_group_results_json = {}
+            db.add(job)
+            db.commit()
+
     async def _run_map_with_retries(
         self,
         job_id: str,
@@ -1797,13 +1977,12 @@ class ReportPipeline:
         model_config: ReportModelConfig,
         targets: Sequence[Target],
         active_target_briefs: Sequence[ActiveTargetBrief],
+        opportunity_result: OpportunityCheckResult,
     ) -> GlobalCodingOutput:
         last_error: Exception | None = None
         validation_feedback: str | None = None
         turn_speakers: dict[str, Literal["worker", "client"]] = {
-            turn.turn_id: (
-                "worker" if turn.speaker is TurnSpeaker.worker else "client"
-            )
+            turn.turn_id: ("worker" if turn.speaker is TurnSpeaker.worker else "client")
             for turn in coding_input.turns
         }
         for attempt in range(MAX_REDUCE_ATTEMPTS):
@@ -1821,10 +2000,10 @@ class ReportPipeline:
                     scene=coding_input.session.scene,
                     media=coding_input.session.media,
                     active_target_briefs=active_target_briefs,
+                    conditional_opportunities=opportunity_result.conditional_opportunities,
+                    action_observations=opportunity_result.action_observations,
                     call_kind=(
-                        ModelCallKind.initial
-                        if attempt == 0
-                        else ModelCallKind.repair
+                        ModelCallKind.initial if attempt == 0 else ModelCallKind.repair
                     ),
                     validation_feedback=validation_feedback,
                 )
@@ -1832,6 +2011,11 @@ class ReportPipeline:
                     coding_input,
                     output,
                 ).usable_output
+                validate_condition_observations(
+                    coding_input,
+                    opportunity_result,
+                    usable_output.opportunity_observations,
+                )
                 _validate_global_contract(
                     coding_input,
                     usable_output,

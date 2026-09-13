@@ -150,7 +150,7 @@ describe('SessionPage', () => {
     expect(screen.getByRole('button', { name: '收起会谈原文' })).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByText('喂，你好。')).toBeInTheDocument()
     expect(screen.getByText('我想先了解一下你现在')).toBeInTheDocument()
-    expect(screen.getByText('麦克风已连接')).toBeInTheDocument()
+    expect(screen.getByText('通话已连接')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '我说完了' })).toBeEnabled()
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
     expect(screen.queryByText(/改用文字|文字降级/)).not.toBeInTheDocument()
@@ -180,7 +180,7 @@ describe('SessionPage', () => {
     liveMock.current = defaultLive({ inputNotice: '已清空，请重新说这一句' })
     renderSession('hotline')
 
-    expect(await screen.findByRole('status')).toHaveTextContent('已清空，请重新说这一句')
+    expect(await screen.findByText('已清空，请重新说这一句')).toHaveAttribute('role', 'status')
   })
 
   it('语音生成和播放期间禁用“我说完了”', async () => {
@@ -200,6 +200,80 @@ describe('SessionPage', () => {
     )
     expect(await screen.findByRole('button', { name: '我说完了' })).toBeDisabled()
     expect(manualComplete).not.toHaveBeenCalled()
+  })
+
+  it.each(['quiet', 'speaking', 'paused'])('接听状态为 %s 时仅提示发言时段，不宣称麦克风已就绪', async (state) => {
+    liveMock.current = defaultLive({
+      voiceActivity: { state, confirmedSilenceMs: state === 'paused' ? 620 : 0 },
+    })
+    renderSession('hotline')
+
+    await screen.findByRole('button', { name: '我说完了' })
+    expect(screen.queryAllByText(/麦克风已连接|正在接收语音|现在可以说话/)).toHaveLength(0)
+    const speakingTurn = screen.getByRole('status', { name: '发言时段' })
+    expect(speakingTurn).toHaveTextContent('轮到你说话')
+    expect(speakingTurn).toHaveTextContent('说完后点击“我说完了”')
+    expect(screen.getByText('通话已连接')).toBeInTheDocument()
+  })
+
+  it.each(['directing', 'acting', 'synthesizing'])('回应阶段 %s 不再提示用户继续说话', async (phase) => {
+    liveMock.current = defaultLive({
+      phase,
+      voiceActivity: { state: 'speaking', confirmedSilenceMs: 0 },
+    })
+    renderSession('hotline')
+
+    const speakingTurn = await screen.findByRole('status', { name: '发言时段' })
+    expect(speakingTurn).toHaveTextContent('请暂候 · 现在不是发言时段')
+    expect(screen.getByText(/正在等待来访者回应/)).toBeInTheDocument()
+    expect(screen.queryByText(/轮到你说话|按平常的节奏说|正在听你说话/)).not.toBeInTheDocument()
+    expect(screen.getByText('通话已连接')).toBeInTheDocument()
+  })
+
+  it('清空重说尚未确认时提示等待，不提前提示重新开口', async () => {
+    liveMock.current = defaultLive({
+      redoInputPending: true,
+      canManualComplete: false,
+      voiceActivity: { state: 'paused', confirmedSilenceMs: 620 },
+    })
+    renderSession('institution')
+
+    expect(await screen.findByRole('button', { name: '正在清空…' })).toBeDisabled()
+    expect(screen.getByRole('status', { name: '发言时段' })).toHaveTextContent('请暂候 · 现在不是发言时段')
+    expect(screen.getByText(/正在清空本轮内容/)).toBeInTheDocument()
+    expect(screen.queryByText(/轮到你说话|按平常的节奏说|检测到停顿/)).not.toBeInTheDocument()
+  })
+
+  it.each(['connecting', 'reconnecting', 'closed'])('连接为 %s 时不把旧接听状态展示成可以说话', async (connection) => {
+    liveMock.current = defaultLive({ connection })
+    renderSession('hotline')
+
+    expect(await screen.findByRole('status', { name: '发言时段' })).toHaveTextContent('请暂候 · 现在不是发言时段')
+    expect(screen.getByText(/接通后再开始说话/)).toBeInTheDocument()
+    expect(screen.queryByText(/轮到你说话|按平常的节奏说|通话已连接/)).not.toBeInTheDocument()
+  })
+
+  it.each(['listening', 'technical_paused'])('技术暂停优先于 %s 和上轮发言状态', async (phase) => {
+    liveMock.current = defaultLive({
+      phase,
+      manualCompletePending: true,
+      voiceActivity: { state: 'speaking', confirmedSilenceMs: 0 },
+      technicalPause: { message: '来访者的信号不太稳定', canRetry: true },
+    })
+    renderSession('hotline')
+
+    expect(await screen.findByRole('status', { name: '发言时段' })).toHaveTextContent('请暂候 · 现在不是发言时段')
+    expect(screen.getByText(/重新接通后再继续/)).toBeInTheDocument()
+    expect(screen.queryByText(/轮到你说话|按平常的节奏说|正在听你说话|本轮已提交/)).not.toBeInTheDocument()
+  })
+
+  it('播放阶段即使播放标记尚未更新也不提示用户开口', async () => {
+    liveMock.current = defaultLive({ phase: 'playing', isPlaying: false })
+    renderSession('institution')
+
+    expect(await screen.findByRole('status', { name: '发言时段' })).toHaveTextContent('请暂候 · 现在不是发言时段')
+    expect(screen.getByText('来访者正在说话，请听完后再继续回应。')).toBeInTheDocument()
+    expect(screen.queryByText(/轮到你说话|按平常的节奏说/)).not.toBeInTheDocument()
   })
 
   it('VAD 停顿只作为手动提交提示', async () => {
@@ -231,6 +305,9 @@ describe('SessionPage', () => {
     renderSession('hotline')
 
     expect(await screen.findByRole('button', { name: '正在提交…' })).toBeDisabled()
+    expect(screen.getByRole('status', { name: '发言时段' })).toHaveTextContent('请暂候 · 现在不是发言时段')
+    expect(screen.getByText(/本轮已提交，正在等待来访者回应/)).toBeInTheDocument()
+    expect(screen.queryByText(/轮到你说话|按平常的节奏说/)).not.toBeInTheDocument()
   })
 
   it('对话处理中只呈现热线可理解的状态，不展示内部运行阶段', async () => {
@@ -261,7 +338,7 @@ describe('SessionPage', () => {
     expect(await screen.findByText('来访者的信号不太稳定')).toBeInTheDocument()
     expect(screen.getByText('喂，你好。')).toBeInTheDocument()
     expect(screen.getByText('计时已暂停')).toBeInTheDocument()
-    expect(screen.queryByText('麦克风已连接')).not.toBeInTheDocument()
+    expect(screen.queryByText('通话已连接')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '重新连接' }))
     expect(retry).toHaveBeenCalledOnce()
   })
@@ -304,7 +381,7 @@ describe('SessionPage', () => {
     expect(sendText).toHaveBeenCalledWith('你愿意从哪件事说起？')
     expect(input).toHaveValue('你愿意从哪件事说起？')
     expect(screen.queryByRole('button', { name: '我说完了' })).not.toBeInTheDocument()
-    expect(screen.queryByText('麦克风已连接')).not.toBeInTheDocument()
+    expect(screen.queryByText('通话已连接')).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: '当前会谈状态' })).not.toBeInTheDocument()
     expect(screen.getByRole('region', { name: '在线咨询消息' })).toBeInTheDocument()
     expect(screen.queryByText('通话中')).not.toBeInTheDocument()
@@ -500,7 +577,7 @@ describe('SessionPage', () => {
 
     expect(await screen.findByRole('heading', { name: '本次通话已自然结束' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '填写工作记录' })).toBeInTheDocument()
-    expect(screen.queryByText('麦克风已连接')).not.toBeInTheDocument()
+    expect(screen.queryByText('通话已连接')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '我说完了' })).not.toBeInTheDocument()
   })
 
@@ -512,7 +589,19 @@ describe('SessionPage', () => {
     expect(screen.queryByRole('status', { name: '通话结束' })).not.toBeInTheDocument()
   })
 
-  it('收到结束事件后立即把会话终态写入共享查询缓存', async () => {
+  it('结束确认先于实时原文到达时保留已经读取的确认原话', async () => {
+    liveMock.current = defaultLive({
+      transcript: [], endedReason: 'technical_interruption', phase: 'ended', connection: 'closed',
+    })
+    renderSession('hotline')
+
+    await screen.findByText('已记录 2 条确认内容')
+    await userEvent.setup().click(screen.getByRole('button', { name: '展开会谈原文' }))
+    expect(screen.getByText('喂，你好。')).toBeInTheDocument()
+    expect(screen.getByText('你好，我在听。')).toBeInTheDocument()
+  })
+
+  it.each(['hotline', 'online'] as const)('收到结束事件后把 %s 的完整确认原话与终态一起缓存', async (scene) => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
     })
@@ -520,7 +609,7 @@ describe('SessionPage', () => {
       ...turn, provider: null, degraded: false, created_at: now, audio_available: false,
     }))
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({
-      session: session('hotline'), transcript: restTurns,
+      session: session(scene), transcript: restTurns,
     })))
     const renderTree = () => (
       <QueryClientProvider client={queryClient}>
@@ -532,16 +621,43 @@ describe('SessionPage', () => {
     const view = render(renderTree())
     await screen.findByRole('button', { name: '收起会谈原文' })
 
+    const confirmedTurns = [...persisted, {
+      id: 'c3', sequence: 3, speaker: 'client', text: '她回我消息了，我先等她过来。', client_turn_id: 'turn-1',
+    }, {
+      id: 'w4', sequence: 4, speaker: 'worker', text: '好的，需要时可以再联系我们。', client_turn_id: 'turn-2',
+    }]
     liveMock.current = defaultLive({
       endedReason: 'natural_closure', phase: 'ended', connection: 'closed',
+      transcript: confirmedTurns,
+      liveTranscript: '尚未提交的识别草稿', visitorPreview: '未确认的来访者预览',
     })
     view.rerender(renderTree())
-    expect(await screen.findByRole('heading', { name: '本次通话已自然结束' })).toBeInTheDocument()
+    const heading = scene === 'hotline' ? '本次通话已自然结束' : '本次咨询已自然结束'
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument()
 
     await waitFor(() => {
-      const cached = queryClient.getQueryData<{ session: { status: string; end_reason: string | null } }>(['session', 's1'])
+      const cached = queryClient.getQueryData<{
+        session: { status: string; end_reason: string | null }
+        transcript: typeof persisted
+      }>(['session', 's1'])
       expect(cached?.session.status).toBe('ended')
       expect(cached?.session.end_reason).toBe('natural_closure')
+      expect(cached?.transcript).toEqual(confirmedTurns)
     })
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: '展开会谈原文' }))
+    expect(screen.getByText('她回我消息了，我先等她过来。')).toBeInTheDocument()
+    expect(screen.getByText('好的，需要时可以再联系我们。')).toBeInTheDocument()
+    expect(screen.queryByText('尚未提交的识别草稿')).not.toBeInTheDocument()
+    expect(screen.queryByText('未确认的来访者预览')).not.toBeInTheDocument()
+
+    // 在缓存有效期内离开再返回，也不能退回进入会谈时的旧原文。
+    view.unmount()
+    render(renderTree())
+    await screen.findByRole('heading', { name: heading })
+    await user.click(screen.getByRole('button', { name: '展开会谈原文' }))
+    expect(screen.getByText('她回我消息了，我先等她过来。')).toBeInTheDocument()
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })

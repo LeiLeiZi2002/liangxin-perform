@@ -250,7 +250,10 @@ export function WorkRecordPage() {
       if (!save.isPending) save.mutate(form)
       return
     }
-    const parsed = workRecordInputSchema.safeParse(form)
+    const parsed = workRecordInputSchema.safeParse({
+      ...form,
+      missing_information: lines(form.missing_information.join('\n')),
+    })
     if (!parsed.success) {
       setError('请完整填写本次求助、安全研判、行动状态和判断限制。')
       return
@@ -328,7 +331,7 @@ export function WorkRecordPage() {
                 aria-label={workRecordFieldLabels.missing_information}
                 disabled={isFormLocked}
                 value={form.missing_information.join('\n')}
-                onChange={(event) => set('missing_information', lines(event.target.value))}
+                onChange={(event) => set('missing_information', event.target.value.split('\n'))}
               />
             </label>
 

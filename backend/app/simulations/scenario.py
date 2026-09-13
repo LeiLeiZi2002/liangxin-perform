@@ -76,6 +76,7 @@ class ProbeCard(SimulationModel):
     text: str = Field(min_length=1)
     character_text: str | None = Field(default=None, min_length=1)
     scene_texts: dict[Scene, str] = Field(default_factory=dict)
+    world_stage_texts: dict[WorldStage, str] = Field(default_factory=dict)
     character_only: bool = False
     world_time_advance_seconds: int = Field(default=0, ge=0, le=3600)
     expect_world_stage: WorldStage | None = None
@@ -91,9 +92,12 @@ class ProbeCard(SimulationModel):
         engine: SimulationRuntimeEngine,
         *,
         scene: Scene | None = None,
+        world_stage: WorldStage | None = None,
     ) -> str | None:
         if engine == "workflow":
             return None if self.character_only else self.text
+        if world_stage is not None and world_stage in self.world_stage_texts:
+            return self.world_stage_texts[world_stage]
         if scene is not None and scene in self.scene_texts:
             return self.scene_texts[scene]
         return self.character_text or self.text

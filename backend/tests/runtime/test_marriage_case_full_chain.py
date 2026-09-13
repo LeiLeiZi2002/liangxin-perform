@@ -277,9 +277,13 @@ class TranscriptReportGateway:
         model_config: object | None = None,
         turn_speakers: dict[str, str] | None = None,
         active_target_briefs: Sequence[object] = (),
+        conditional_opportunities: Sequence[object] = (),
+        action_observations: Sequence[object] = (),
         validation_feedback: str | None = None,
     ) -> GlobalCodingOutput:
         del session_id, call_kind, model_config, active_target_briefs, validation_feedback
+        assert not conditional_opportunities
+        assert not action_observations
         self.reduce_contexts.append((scene, media))
         speakers = turn_speakers or {}
         dialogue_refs: list[DialogueRef] = []

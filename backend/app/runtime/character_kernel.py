@@ -25,6 +25,7 @@ from app.runtime.character_provider import (
 from app.runtime.character_world import (
     SupportWorldAction,
     SupportWorldDefinition,
+    SupportWorldStage,
     SupportWorldView,
     apply_support_world_action,
     build_support_world_view,
@@ -103,6 +104,7 @@ class CharacterRuntime(Protocol):
 class _CharacterContext:
     record: SessionRecord
     transcript: list[CharacterTranscriptTurn]
+    last_observed_world_stage: SupportWorldStage | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,7 +156,9 @@ class CharacterPromptKernel(AssessmentKernel):
         )
         self._characters = characters
         self._character = character
-        self._pending_outputs: dict[tuple[str, str, bool], CharacterOutput] = {}
+        self._pending_outputs: dict[
+            tuple[str, str, bool], tuple[CharacterOutput, SupportWorldView]
+        ] = {}
         self._pending_retries: dict[
             tuple[str, str, bool], CharacterPendingRetry
         ] = {}
@@ -221,6 +225,7 @@ class CharacterPromptKernel(AssessmentKernel):
                 character_definition.world,
                 loaded.record.state_json,
                 world_time_advance_seconds=world_time_advance_seconds,
+                previously_observed_stage=loaded.last_observed_world_stage,
             )
 
             async def act() -> CharacterOutput:
@@ -238,8 +243,10 @@ class CharacterPromptKernel(AssessmentKernel):
                 self._require_allowed_action(generated, world_view.allowed_actions)
                 return generated
 
-            output = self._pending_outputs.get(output_key)
-            if output is None:
+            pending_output = self._pending_outputs.get(output_key)
+            if pending_output is not None:
+                output, world_view = pending_output
+            else:
                 try:
                     output = await self._attempt_stage(
                         session_id,
@@ -263,7 +270,7 @@ class CharacterPromptKernel(AssessmentKernel):
                             speech_metrics=speech_metrics,
                         )
                     raise
-                self._pending_outputs[output_key] = output
+                self._pending_outputs[output_key] = (output, world_view)
                 self._pending_retries[output_key] = CharacterPendingRetry(
                     session_id=session_id,
                     client_turn_id=client_turn_id,
@@ -295,6 +302,7 @@ class CharacterPromptKernel(AssessmentKernel):
                     speech_metrics=speech_metrics,
                     world_definition=character_definition.world,
                     world_time_advance_seconds=world_time_advance_seconds,
+                    observed_world_stage=world_view.stage,
                 )
             except Exception as exc:
                 raise await self._persistence_pause(
@@ -367,8 +375,10 @@ class CharacterPromptKernel(AssessmentKernel):
                 self._require_allowed_action(generated, opening_actions)
                 return generated
 
-            output = self._pending_outputs.get(output_key)
-            if output is None:
+            pending_output = self._pending_outputs.get(output_key)
+            if pending_output is not None:
+                output, world_view = pending_output
+            else:
                 output = await self._attempt_stage(
                     session_id,
                     RuntimePhase.acting,
@@ -381,7 +391,7 @@ class CharacterPromptKernel(AssessmentKernel):
                         else None
                     ),
                 )
-                self._pending_outputs[output_key] = output
+                self._pending_outputs[output_key] = (output, world_view)
                 self._pending_retries[output_key] = CharacterPendingRetry(
                     session_id=session_id,
                     client_turn_id=client_turn_id,
@@ -475,8 +485,19 @@ class CharacterPromptKernel(AssessmentKernel):
             self._require_character_engine(record)
             turns = self._all_turns(db, session_id)
             record_copy = SessionRecord.model_validate(record.model_dump())
+        previous_stage = next(
+            (
+                turn.signals_json.get("world_stage_before")
+                for turn in reversed(turns)
+                if turn.speaker is TurnSpeaker.client
+            ),
+            None,
+        )
         return _CharacterContext(
             record=record_copy,
+            last_observed_world_stage=(
+                SupportWorldStage(previous_stage) if previous_stage is not None else None
+            ),
             transcript=[
                 CharacterTranscriptTurn(
                     speaker=turn.speaker.value,
@@ -503,6 +524,7 @@ class CharacterPromptKernel(AssessmentKernel):
         speech_metrics: SpeechMetricsInput | None,
         world_definition: SupportWorldDefinition | None,
         world_time_advance_seconds: float,
+        observed_world_stage: SupportWorldStage | None,
     ) -> KernelTurnResult:
         worker_id = uuid4().hex
         client_id = uuid4().hex
@@ -576,7 +598,8 @@ class CharacterPromptKernel(AssessmentKernel):
                         "delivery_hint": output.delivery_hint.strip(),
                         "end_session": output.end_session,
                         "action_request": action_request.value,
-                        "world_stage_before": world_before.stage.value,
+                        # 记录生成实际看见的状态；语音等待期间可能有新事件。
+                        "world_stage_before": observed_world_stage,
                         "world_stage_after": world_after.stage.value,
                     }
                     next_state_json = store_support_world(
@@ -1008,6 +1031,7 @@ class CharacterPromptKernel(AssessmentKernel):
         state_json: dict[str, object],
         *,
         world_time_advance_seconds: float,
+        previously_observed_stage: SupportWorldStage | None = None,
     ) -> SupportWorldView:
         if definition is None:
             return no_external_world_view()
@@ -1015,7 +1039,9 @@ class CharacterPromptKernel(AssessmentKernel):
             load_support_world(state_json),
             now=utc_now() + timedelta(seconds=world_time_advance_seconds),
         )
-        return build_support_world_view(definition, world)
+        return build_support_world_view(
+            definition, world, previously_observed_stage=previously_observed_stage,
+        )
 
     @staticmethod
     def _require_allowed_action(

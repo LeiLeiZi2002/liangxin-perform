@@ -76,7 +76,7 @@ def test_marriage_boundary_character_is_the_only_complete_role_source() -> None:
         character.scene_profiles["online"]
     )
     rules = "\n".join(character.rules)
-    assert "主动求助" in rules
+    assert "主动找人商量" in rules
     assert "不能确认许凯是否越界" in rules
     assert "action_request" in rules and "none" in rules
     assert "括号舞台说明" in rules
@@ -85,11 +85,11 @@ def test_marriage_boundary_character_is_the_only_complete_role_source() -> None:
 def test_marriage_boundary_character_maps_explicit_continue_or_end_choice() -> None:
     character = CharacterRepository().get(CASE_ID)
 
-    assert (
-        "工作者明确让苏静在继续与结束之间选择时，若她选结束，同一轮用自然口语道别并将 "
-        "end_session 设为 true；若她选继续，end_session 设为 false。"
-        in character.rules
-    )
+    rules = "\n".join(character.rules)
+    assert "双方决定结束或她决定离开时" in rules
+    assert "自然道别并将 end_session 设为 true" in rules
+    assert "只同意某个办法时仍为 false" in rules
+    assert "丈夫说的返回时间不自动结束会谈" in rules
 
 
 def test_marriage_boundary_character_contains_complete_stable_family_context() -> None:
@@ -120,16 +120,17 @@ def test_marriage_boundary_opening_rules_separate_hotline_and_online_language() 
     assert "可以自然确认电话已经接通" in str(
         hotline["language_requirements"]
     )
-    assert "直接用聊天式的‘你好，我想问个事’开始" in str(
+    assert "不规定第一句措辞" in str(
         online["language_requirements"]
     )
     assert "不用电话里的‘喂’、‘有人吗’或确认接通" in str(
         online["language_requirements"]
     )
     online_opening = str(online["opening_reference"])
-    assert online_opening.startswith("你好，我想问个事，是我老公的事")
+    assert online_opening.startswith("你好")
+    assert "老公" in online_opening.splitlines()[0]
     assert "\n\n是我老公的\n\n" not in online_opening
-    assert "不在开场逐条罗列" in character.opening_guidance
+    assert "不必一次说齐" in character.opening_guidance
     for profile in (hotline, online):
         assert str(profile["opening_reference"]).rstrip().endswith(
             str(profile["privacy_question"])

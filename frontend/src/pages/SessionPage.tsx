@@ -252,6 +252,15 @@ function SessionWorkbench({ session, initialTurns }: { session: Session; initial
     && !live.technicalPause
     && !live.isPlaying
     && live.canManualComplete
+  const workerSpeakingTurn = voice
+    && connected
+    && !ended
+    && live.phase === 'listening'
+    && !live.technicalPause
+    && !live.retrying
+    && !live.isPlaying
+    && !live.manualCompletePending
+    && !live.redoInputPending
 
   useEffect(() => {
     if (!live.endedReason) return
@@ -260,6 +269,7 @@ function SessionWorkbench({ session, initialTurns }: { session: Session; initial
       ['session', session.id],
       (current) => current ? {
         ...current,
+        transcript: live.transcript.length > 0 ? live.transcript : current.transcript,
         session: {
           ...current.session,
           status: 'ended',
@@ -269,7 +279,7 @@ function SessionWorkbench({ session, initialTurns }: { session: Session; initial
         },
       } : current,
     )
-  }, [live.endedReason, queryClient, session.id])
+  }, [live.endedReason, live.transcript, queryClient, session.id])
 
   const orbScale = useMemo(() => 1 + Math.min(live.energy, 0.12) * 1.7, [live.energy])
   const draftValue = live.textTurnStatus === 'committed' && draftSubmitted ? '' : draft
@@ -293,17 +303,28 @@ function SessionWorkbench({ session, initialTurns }: { session: Session; initial
         ? '连接已断开'
         : currentPhase
 
-  const conversationHint = ended
-    ? '通话已经结束，麦克风与声音播放均已关闭。'
-    : !voice
-      ? '可以按真实在线咨询的方式组织文字。'
-      : live.isPlaying
-        ? '来访者正在说话，请听完后再继续回应。'
-        : live.voiceActivity.state === 'paused'
-          ? '检测到停顿，确认说完后请点击“我说完了”。'
-          : live.voiceActivity.state === 'speaking'
-            ? '正在听你说话，本轮结束后请点击“我说完了”。'
-            : '按平常的节奏说就好，本轮只会在你点击“我说完了”后提交。'
+  let conversationHint = '按平常的节奏说就好，本轮只会在你点击“我说完了”后提交。'
+  if (ended) {
+    conversationHint = '通话已经结束，麦克风与声音播放均已关闭。'
+  } else if (!voice) {
+    conversationHint = '可以按真实在线咨询的方式组织文字。'
+  } else if (live.technicalPause || live.phase === 'technical_paused' || live.retrying) {
+    conversationHint = '通话暂时中断，请等待重新接通后再继续。'
+  } else if (!connected) {
+    conversationHint = '语音尚未接通，请等待接通后再开始说话。'
+  } else if (live.isPlaying || live.phase === 'playing') {
+    conversationHint = '来访者正在说话，请听完后再继续回应。'
+  } else if (live.manualCompletePending) {
+    conversationHint = '本轮已提交，正在等待来访者回应；请等提示可以说话后再继续。'
+  } else if (live.redoInputPending) {
+    conversationHint = '正在清空本轮内容，请等清空完成后重新说整句。'
+  } else if (live.phase !== 'listening') {
+    conversationHint = '正在等待来访者回应；请等提示可以说话后再继续。'
+  } else if (live.voiceActivity.state === 'paused') {
+    conversationHint = '检测到停顿，确认说完后请点击“我说完了”。'
+  } else if (live.voiceActivity.state === 'speaking') {
+    conversationHint = '正在听你说话，本轮结束后请点击“我说完了”。'
+  }
 
   if (!voice) {
     const onlineConnectionLabel = live.connection === 'connecting'
@@ -510,8 +531,13 @@ function SessionWorkbench({ session, initialTurns }: { session: Session; initial
         </div>
         <p className="conversation-stage__status">{connectionLabel}</p>
         <p className="conversation-stage__hint">{conversationHint}</p>
+        {!ended ? (
+          <span className="microphone-state" role="status" aria-label="发言时段" aria-live="polite">
+            {workerSpeakingTurn ? '轮到你说话 · 说完后点击“我说完了”' : '请暂候 · 现在不是发言时段'}
+          </span>
+        ) : null}
         {voice && !ended && connected && !live.technicalPause ? (
-          <span className="microphone-state"><Mic aria-hidden="true" size={14} />麦克风已连接</span>
+          <span className="microphone-state"><Mic aria-hidden="true" size={14} />通话已连接</span>
         ) : null}
       </section>
 

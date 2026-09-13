@@ -17,19 +17,23 @@ from app.reports.models import ReportJobRecord
 from app.reports.report_pipeline import (
     MAX_BATCH_ATTEMPTS,
     MAX_REDUCE_ATTEMPTS,
+    OpportunityCheckResult,
     ReportPipeline,
     ValidatedTarget,
     _build_validated_targets,
+    _ensure_local_source_coverage,
     _known_urgent_termination_event,
+    _normalize_reduce_output_sources,
     _validate_global_contract,
     _validate_group_output,
     _validate_local_contract,
     _validate_reduce_source_closure,
     check_opportunities,
+    opportunity_analysis_targets,
     split_coding_input,
+    validate_condition_observations,
 )
 from app.reports.report_provider import (
-    ActiveTargetBrief,
     GlobalCodingOutput,
     GroupScoringOutput,
     LocalCodingOutput,
@@ -137,6 +141,12 @@ class RunObservation(StabilityModel):
 
 
 class TargetStability(StabilityModel):
+    included_in_runs: list[bool]
+    inclusion_agreement: float = Field(
+        ge=0,
+        le=1,
+        description="纳入与未纳入两种状态中，出现次数较多者占全部运行的比例。",
+    )
     levels: list[int | None]
     unscored_reasons: list[UnscoredReason | None]
     modal_level: int | None
@@ -213,14 +223,25 @@ def _modal_level(values: Sequence[int | None]) -> tuple[int | None, float]:
 def summarize_stability(observations: Sequence[RunObservation]) -> StabilitySummary:
     if len(observations) < 2:
         raise ValueError("运行稳定性检查至少需要两次完整运行")
-    targets = set(observations[0].targets)
-    if any(set(item.targets) != targets for item in observations[1:]):
-        raise ValueError("每次运行必须包含完全相同的评分目标")
+    core_targets = {
+        target for target in observations[0].targets if isinstance(target, CoreDimension)
+    }
+    if any(
+        {target for target in item.targets if isinstance(target, CoreDimension)}
+        != core_targets
+        for item in observations[1:]
+    ):
+        raise ValueError("每次运行必须包含完全相同的核心评分目标")
+    targets = {target for observation in observations for target in observation.targets}
 
     per_target: dict[str, TargetStability] = {}
     unscored_consistencies: list[float] = []
     for target in sorted(targets, key=lambda item: item.value):
-        target_runs = [item.targets[target] for item in observations]
+        included_in_runs = [target in item.targets for item in observations]
+        # 未纳入的专项仅留空位以对齐轮次，不补造等级或“没有机会”的判断。
+        target_runs = [
+            item.targets.get(target, TargetRunObservation()) for item in observations
+        ]
         levels = [item.level for item in target_runs]
         modal_level, exact_agreement = _modal_level(levels)
         if modal_level is None:
@@ -248,6 +269,8 @@ def summarize_stability(observations: Sequence[RunObservation]) -> StabilitySumm
         if any(reason is not None for reason in unscored_reasons):
             unscored_consistencies.append(_modal_agreement(unscored_reasons))
         per_target[target.value] = TargetStability(
+            included_in_runs=included_in_runs,
+            inclusion_agreement=_modal_agreement(included_in_runs),
             levels=levels,
             unscored_reasons=unscored_reasons,
             modal_level=modal_level,
@@ -367,22 +390,38 @@ class StabilityRunner:
             material.coding_input,
             material.opportunity_check_input,
         )
-        targets: list[Target] = [
-            *CoreDimension,
-            *opportunity_result.activated_modules,
-        ]
         global_output = await self._reduce_coding(
             material,
             local_outputs,
             session_id=session_id,
-            targets=targets,
-            active_target_briefs=opportunity_result.active_target_briefs,
+            targets=opportunity_analysis_targets(opportunity_result),
+            opportunities=opportunity_result,
         )
+        validate_condition_observations(
+            material.coding_input,
+            opportunity_result,
+            global_output.opportunity_observations,
+        )
+        opportunity_result = check_opportunities(
+            material.coding_input,
+            material.opportunity_check_input,
+            observations=global_output.opportunity_observations,
+        )
+        targets: list[Target] = [
+            *CoreDimension,
+            *opportunity_result.activated_modules,
+        ]
+        source_normalized = _normalize_reduce_output_sources(
+            material.coding_input,
+            global_output,
+        )
+        global_output = source_normalized.usable_output
         validated = _build_validated_targets(
             material.coding_input,
             opportunity_result,
             global_output,
             targets,
+            rejected_by_target=source_normalized.rejected_by_target,
         )
         group_outputs = await asyncio.gather(
             *(
@@ -438,7 +477,9 @@ class StabilityRunner:
                     validation_feedback=validation_feedback,
                 )
                 _validate_local_contract(shard, output)
-                return output
+                completed = _ensure_local_source_coverage(shard, output)
+                _validate_local_contract(shard, completed)
+                return completed
             except NonRetryableRuntimeModelError as exc:
                 last_error = exc
                 break
@@ -454,7 +495,7 @@ class StabilityRunner:
         *,
         session_id: str,
         targets: Sequence[Target],
-        active_target_briefs: Sequence[ActiveTargetBrief],
+        opportunities: OpportunityCheckResult,
     ) -> GlobalCodingOutput:
         last_error: Exception | None = None
         validation_feedback: str | None = None
@@ -474,18 +515,29 @@ class StabilityRunner:
                     turn_speakers=turn_speakers,
                     scene=material.coding_input.session.scene,
                     media=material.coding_input.session.media,
-                    active_target_briefs=active_target_briefs,
+                    active_target_briefs=opportunities.active_target_briefs,
+                    conditional_opportunities=opportunities.conditional_opportunities,
+                    action_observations=opportunities.action_observations,
                     call_kind=(
                         ModelCallKind.initial if attempt == 0 else ModelCallKind.repair
                     ),
                     validation_feedback=validation_feedback,
                 )
-                _validate_global_contract(
+                validate_condition_observations(
+                    material.coding_input,
+                    opportunities,
+                    output.opportunity_observations,
+                )
+                usable_output = _normalize_reduce_output_sources(
                     material.coding_input,
                     output,
+                ).usable_output
+                _validate_global_contract(
+                    material.coding_input,
+                    usable_output,
                     targets,
                 )
-                _validate_reduce_source_closure(local_outputs, output)
+                _validate_reduce_source_closure(local_outputs, usable_output)
                 return output
             except NonRetryableRuntimeModelError as exc:
                 last_error = exc

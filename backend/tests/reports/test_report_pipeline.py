@@ -110,6 +110,8 @@ def _create_job(
     media: Media = Media.voice,
     end_reason: EndReason | None = None,
     state_json: dict[str, Any] | None = None,
+    extra_turns: Sequence[TurnRecord] = (),
+    legacy_conditions: bool = False,
 ) -> ReportJobRecord:
     SQLModel.metadata.create_all(engine)
     now = datetime(2026, 8, 30, 9, 0, tzinfo=UTC)
@@ -183,7 +185,7 @@ def _create_job(
         updated_at=now,
     )
     with Session(engine) as db:
-        db.add_all([session_record, *turns, work_record])
+        db.add_all([session_record, *turns, *extra_turns, work_record])
         db.commit()
     with Session(engine) as db:
         created = ReportJobService(
@@ -193,8 +195,164 @@ def _create_job(
         ).create(session_id)
         stored = db.get(ReportJobRecord, created.job.id)
         assert stored is not None
+        if legacy_conditions:
+            # 明确构造旧链冻结材料，不能用现行案例声明假装旧披露条件。
+            payload = deepcopy(stored.opportunity_check_json)
+            for declaration in payload["case_package"]["measurement"][
+                "scoring_opportunities"
+            ]:
+                if declaration["kind"] != "conditional":
+                    continue
+                depths = (
+                    {"minimum_risk_cue": 1}
+                    if declaration["id"] == "full_risk_appraisal_after_cue"
+                    else {"suicidal_ideation": 1, "timing_intent": 2}
+                )
+                declaration.update(
+                    source="runtime_state",
+                    linked_fact_ids=list(depths),
+                    required_fact_depths=depths,
+                    required_event_ids=(
+                        ["first_contact_tang_ting"]
+                        if declaration["id"] == "safety_plan_after_support_setback"
+                        else []
+                    ),
+                )
+            stored.opportunity_check_json = payload
+            db.add(stored)
+            db.commit()
+            db.refresh(stored)
         db.expunge(stored)
         return stored
+
+
+def _public_risk_job(test_engine: Engine) -> ReportJobRecord:
+    return _create_job(
+        test_engine,
+        state_json={"runtime": {"engine": "character_prompt", "phase": "ended"}},
+        extra_turns=[
+            TurnRecord(
+                id="public-risk-client",
+                session_id="session-pipeline",
+                client_turn_id="client-risk-pair",
+                sequence=3,
+                speaker=TurnSpeaker.client,
+                text="我这两天想过伤害自己，怕今晚一个人待着会出事。消息已经发了，她没回。",
+                signals_json={
+                    "runtime_engine": "character_prompt",
+                    "action_request": "send_first_support_message",
+                    "world_stage_before": "not_contacted",
+                    "world_stage_after": "first_unanswered",
+                },
+            )
+        ],
+    )
+
+
+def _present_risk_observations():
+    from app.reports.report_provider import OpportunityObservation
+
+    return [
+        OpportunityObservation(
+            opportunity_id=opportunity_id,
+            status="present",
+            reason="来电者已经公开表达当前风险、今晚的安全担忧与支持未回复。",
+            refs=[
+                DialogueRef(
+                    kind="dialogue",
+                    turn_id="public-risk-client",
+                    quote="我这两天想过伤害自己，怕今晚一个人待着会出事。消息已经发了，她没回。",
+                )
+            ],
+            action_turn_ids=["public-risk-client"]
+            if opportunity_id.endswith("setback")
+            else [],
+        )
+        for opportunity_id in (
+            "full_risk_appraisal_after_cue",
+            "immediate_safety_response",
+            "safety_plan_after_support_setback",
+        )
+    ]
+
+
+async def test_public_conditions_reach_reduce_and_actual_report_without_extra_call(
+    test_engine: Engine,
+):
+    from app.reports.report_pipeline import ReportPipeline
+    from app.reports.service import ReportService
+
+    job = _public_risk_job(test_engine)
+    gateway = FakeGateway()
+    gateway.condition_observations = _present_risk_observations()
+    await ReportPipeline(test_engine, CaseRepository(), gateway).run(job.id)
+
+    assert len(gateway.received_conditions[0]) == 3
+    assert gateway.received_actions[0][0].turn_id == "public-risk-client"
+    assert gateway.calls.count("reduce") == 1
+    assert len(gateway.calls) == 6
+    with Session(test_engine) as db:
+        stored = db.get(ReportJobRecord, job.id)
+        assert stored is not None and stored.stage is ReportJobStage.succeeded
+        assert len(stored.coding_json["opportunity_observations"]) == 3
+        report = ReportService(db, CaseRepository()).get_report(stored.report_id)
+        assert report.summary.activated_modules == [
+            SpecialModule.basic_risk_screening,
+            SpecialModule.full_risk_appraisal,
+            SpecialModule.safety_response,
+        ]
+        assert {item.target for item in report.dimensions}.issuperset(
+            {SpecialModule.full_risk_appraisal, SpecialModule.safety_response}
+        )
+
+
+async def test_missing_public_conditions_fails_analysis_instead_of_closing_modules(
+    test_engine: Engine,
+):
+    from app.reports.report_pipeline import ReportPipeline
+
+    job = _public_risk_job(test_engine)
+    gateway = FakeGateway()
+    gateway.condition_observations = []
+    await ReportPipeline(test_engine, CaseRepository(), gateway).run(job.id)
+
+    assert gateway.calls.count("reduce") == 2
+    assert all(group.value not in gateway.calls for group in ScoringGroup)
+    with Session(test_engine) as db:
+        stored = db.get(ReportJobRecord, job.id)
+        assert stored is not None and stored.stage is ReportJobStage.failed
+        assert stored.report_id is None
+        assert "聚焦汇总失败" in stored.last_error
+
+
+async def test_old_condition_cache_recomputes_coding_and_invalidates_group_cache(
+    test_engine: Engine,
+):
+    from app.reports.report_pipeline import ReportPipeline
+
+    job = _public_risk_job(test_engine)
+    old_coding = _global_output().model_dump(mode="json")
+    old_coding.pop("opportunity_observations", None)
+    with Session(test_engine) as db:
+        stored = db.get(ReportJobRecord, job.id)
+        stored.coding_json = old_coding
+        stored.scoring_groups_done = [group.value for group in ScoringGroup]
+        stored.scoring_group_results_json = {
+            group.value: {"proposals": []} for group in ScoringGroup
+        }
+        db.add(stored)
+        db.commit()
+    gateway = FakeGateway()
+    gateway.condition_observations = _present_risk_observations()
+    await ReportPipeline(test_engine, CaseRepository(), gateway).run(job.id)
+
+    assert gateway.calls.count("reduce") == 1
+    assert sum(call.startswith("map:") for call in gateway.calls) == 2
+    assert all(group.value in gateway.calls for group in ScoringGroup)
+    with Session(test_engine) as db:
+        stored = db.get(ReportJobRecord, job.id)
+        assert stored.stage is ReportJobStage.succeeded
+        assert len(stored.coding_json["opportunity_observations"]) == 3
 
 
 def _units() -> list[MeaningUnit]:
@@ -1235,15 +1393,10 @@ def test_reduce_source_normalization_explains_duplicate_counter_candidates(
     partition = _normalize_reduce_output_sources(coding_input, output)
 
     normalized_check = next(
-        item
-        for item in partition.usable_output.counter_checks
-        if item.target is target
+        item for item in partition.usable_output.counter_checks if item.target is target
     )
     assert normalized_check.found == []
-    assert (
-        normalized_check.not_found_note
-        == "返回候选与初始编码重复，未形成独立反例。"
-    )
+    assert normalized_check.not_found_note == "返回候选与初始编码重复，未形成独立反例。"
 
 
 def test_build_validated_targets_marks_only_targets_losing_all_role_valid_candidates(
@@ -1338,6 +1491,9 @@ class FakeGateway:
         self.received_global: list[dict[str, Any]] = []
         self.received_global_targets: list[list[Target]] = []
         self.received_active_target_briefs: list[list[object]] = []
+        self.received_conditions: list[list[object]] = []
+        self.received_actions: list[list[object]] = []
+        self.condition_observations: list[object] | None = None
         self.received_reduce_contexts: list[tuple[Scene, Media]] = []
         self.received_packets: list[DimensionPacket] = []
         self.received_model_configs: list[object | None] = []
@@ -1374,6 +1530,8 @@ class FakeGateway:
         model_config: object | None = None,
         turn_speakers: dict[str, str] | None = None,
         active_target_briefs: Sequence[object] = (),
+        conditional_opportunities: Sequence[object] = (),
+        action_observations: Sequence[object] = (),
         validation_feedback: str | None = None,
     ) -> GlobalCodingOutput:
         del session_id, call_kind, local_outputs, turn_speakers
@@ -1383,9 +1541,46 @@ class FakeGateway:
         self.received_model_configs.append(model_config)
         self.received_global_targets.append(list(targets))
         self.received_active_target_briefs.append(list(active_target_briefs))
+        self.received_conditions.append(list(conditional_opportunities))
+        self.received_actions.append(list(action_observations))
         if self.fail_global:
             raise RuntimeError("reduce failed")
-        return self.global_output or _global_output(targets, counter_targets=targets)
+        output = self.global_output or _global_output(targets, counter_targets=targets)
+        if conditional_opportunities:
+            from app.reports.report_provider import OpportunityObservation
+
+            decisions = self.condition_observations
+            if decisions is None:
+                decisions = [
+                    OpportunityObservation(
+                        opportunity_id=condition.opportunity_id,
+                        status="absent",
+                        reason="固定基础样本只有工作者发言，没有相应来电者线索。",
+                        refs=[],
+                        action_turn_ids=[],
+                    )
+                    for condition in conditional_opportunities
+                ]
+            checks = list(output.counter_checks)
+            known_targets = {item.target for item in checks}
+            for condition in conditional_opportunities:
+                if condition.target not in known_targets:
+                    checks.append(
+                        CounterCheck(
+                            target=condition.target,
+                            searched_unit_ids=[unit.id for unit in output.units],
+                            found=[],
+                            not_found_note="未观察到对应情境，无相关行为反例。",
+                        )
+                    )
+                    known_targets.add(condition.target)
+            output = output.model_copy(
+                update={
+                    "opportunity_observations": decisions,
+                    "counter_checks": checks,
+                }
+            )
+        return output
 
     async def score_group(
         self,
@@ -1542,6 +1737,8 @@ class NonRetryableGateway(FakeGateway):
         model_config: object | None = None,
         turn_speakers: dict[str, str] | None = None,
         active_target_briefs: Sequence[object] = (),
+        conditional_opportunities: Sequence[object] = (),
+        action_observations: Sequence[object] = (),
         validation_feedback: str | None = None,
     ) -> GlobalCodingOutput:
         if self.failing_batch in {"global", "reduce"}:
@@ -1557,6 +1754,8 @@ class NonRetryableGateway(FakeGateway):
             media=media,
             turn_speakers=turn_speakers,
             active_target_briefs=active_target_briefs,
+            conditional_opportunities=conditional_opportunities,
+            action_observations=action_observations,
             validation_feedback=validation_feedback,
         )
 
@@ -1629,6 +1828,8 @@ class PhaseBarrierGateway(FakeGateway):
         model_config: object | None = None,
         turn_speakers: dict[str, str] | None = None,
         active_target_briefs: Sequence[object] = (),
+        conditional_opportunities: Sequence[object] = (),
+        action_observations: Sequence[object] = (),
         validation_feedback: str | None = None,
     ) -> GlobalCodingOutput:
         assert self.map_finished == {"shard-1", "shard-2"}
@@ -1643,6 +1844,8 @@ class PhaseBarrierGateway(FakeGateway):
             scene=scene,
             media=media,
             active_target_briefs=active_target_briefs,
+            conditional_opportunities=conditional_opportunities,
+            action_observations=action_observations,
             validation_feedback=validation_feedback,
         )
 
@@ -2229,7 +2432,7 @@ def test_opportunity_check_activates_only_declared_modules_after_threshold(
 ) -> None:
     from app.reports.report_pipeline import check_opportunities
 
-    job = _create_job(test_engine)
+    job = _create_job(test_engine, legacy_conditions=True)
     coding_input, opportunity_input = _opportunity_inputs(
         test_engine,
         job,
@@ -2269,8 +2472,8 @@ def test_opportunity_check_reports_distinct_inactive_module_reasons(
     result = check_opportunities(coding_input, opportunity_input)
     reasons = dict(result.inactive_modules)
 
-    assert "未达到启用门槛" in reasons[SpecialModule.full_risk_appraisal]
-    assert "未达到启用门槛" in reasons[SpecialModule.safety_response]
+    assert "尚待分析" in reasons[SpecialModule.full_risk_appraisal]
+    assert "尚待分析" in reasons[SpecialModule.safety_response]
     assert "未声明" in reasons[SpecialModule.emotional_dysregulation]
 
 
@@ -2304,9 +2507,10 @@ def test_required_opportunities_are_fulfilled_without_legacy_actor_state(
     briefs = {brief.target: brief for brief in result.active_target_briefs}
     assert CoreDimension.supportive_intervention in briefs
     assert SpecialModule.dependency_and_boundary in briefs
-    assert "共同比较资源和过渡方式" in briefs[
-        CoreDimension.supportive_intervention
-    ].description
+    assert (
+        "共同比较资源和过渡方式"
+        in briefs[CoreDimension.supportive_intervention].description
+    )
     assert briefs[SpecialModule.dependency_and_boundary].indicator_ids == [
         "S5.pattern",
         "S5.boundary",
@@ -2366,9 +2570,11 @@ def test_opportunity_sources_use_their_own_frozen_material_boundaries(
                 },
             }
         )
-        return check_opportunities(current_input, check_input).outcomes[
-            CoreDimension.respectful_communication
-        ][0].fulfilled
+        return (
+            check_opportunities(current_input, check_input)
+            .outcomes[CoreDimension.respectful_communication][0]
+            .fulfilled
+        )
 
     assert fulfilled("transcript", coding_input) is True
     blank_worker_input = coding_input.model_copy(
@@ -2394,23 +2600,32 @@ def test_opportunity_sources_use_their_own_frozen_material_boundaries(
     assert fulfilled("termination", technical_input) is False
 
     assert fulfilled("work_record", coding_input) is True
-    assert fulfilled(
-        "work_record",
-        coding_input.model_copy(update={"work_record": None}),
-    ) is False
+    assert (
+        fulfilled(
+            "work_record",
+            coding_input.model_copy(update={"work_record": None}),
+        )
+        is False
+    )
 
-    assert fulfilled(
-        "runtime_state",
-        coding_input,
-        with_runtime_gate=True,
-        runtime_depth=0,
-    ) is False
-    assert fulfilled(
-        "runtime_state",
-        coding_input,
-        with_runtime_gate=True,
-        runtime_depth=1,
-    ) is True
+    assert (
+        fulfilled(
+            "runtime_state",
+            coding_input,
+            with_runtime_gate=True,
+            runtime_depth=0,
+        )
+        is False
+    )
+    assert (
+        fulfilled(
+            "runtime_state",
+            coding_input,
+            with_runtime_gate=True,
+            runtime_depth=1,
+        )
+        is True
+    )
 
 
 def test_conditional_opportunity_still_requires_legacy_fact_gate(
@@ -2418,7 +2633,7 @@ def test_conditional_opportunity_still_requires_legacy_fact_gate(
 ) -> None:
     from app.reports.report_pipeline import check_opportunities
 
-    job = _create_job(test_engine)
+    job = _create_job(test_engine, legacy_conditions=True)
     coding_input, opportunity_input = _opportunity_inputs(test_engine, job)
 
     hidden = check_opportunities(coding_input, opportunity_input)
@@ -2490,7 +2705,7 @@ def test_opportunity_check_reads_fulfillment_from_turn_state_without_exposing_it
 ) -> None:
     from app.reports.report_pipeline import check_opportunities
 
-    job = _create_job(test_engine)
+    job = _create_job(test_engine, legacy_conditions=True)
     coding_input, opportunity_input = _opportunity_inputs(
         test_engine,
         job,
@@ -2527,7 +2742,7 @@ async def test_pipeline_uses_fulfilled_case_declarations_for_actual_modules(
     from app.reports.report_pipeline import ReportPipeline
     from app.reports.service import ReportService
 
-    job = _create_job(test_engine)
+    job = _create_job(test_engine, legacy_conditions=True)
     with Session(test_engine) as db:
         stored = db.get(ReportJobRecord, job.id)
         assert stored is not None
@@ -3079,7 +3294,7 @@ async def test_existing_full_eighteen_target_reduce_cache_remains_readable(
 ) -> None:
     from app.reports.report_pipeline import ReportPipeline
 
-    job = _create_job(test_engine)
+    job = _create_job(test_engine, legacy_conditions=True)
     legacy_output = _global_output(
         ANALYSIS_TARGETS,
         counter_targets=ANALYSIS_TARGETS,
@@ -4019,7 +4234,11 @@ async def test_report_and_final_job_state_roll_back_as_one_transaction(
         normalized = statement.strip().upper()
         if normalized.startswith("INSERT INTO REPORTS"):
             saw_report_insert = True
-        elif saw_report_insert and not raised and normalized.startswith("UPDATE REPORT_JOBS"):
+        elif (
+            saw_report_insert
+            and not raised
+            and normalized.startswith("UPDATE REPORT_JOBS")
+        ):
             raised = True
             raise RuntimeError("inject final job update failure")
 

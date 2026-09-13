@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from app.cases.loader import CaseRepository
@@ -24,6 +26,57 @@ MARRIAGE_SCENARIO_IDS = [
     "marriage_privacy_boundary",
     "marriage_natural_close",
 ]
+
+
+def test_character_continuous_catalog_has_no_legacy_disclosure_or_delay_gates() -> None:
+    catalog = load_scenarios(
+        Path(__file__).parent / "fixtures/character_continuous_scenarios.json"
+    )
+    normal = catalog["mingzao_continuous"]
+    assert 12 <= len(normal.cards) <= 16
+    assert sum(len(s.cards) for key, s in catalog.items() if key != normal.scenario_id) == 6
+    for scenario in catalog.values():
+        assert scenario.case_id == "crisis_student_main"
+        assert scenario.profile == "content"
+        assert not scenario.objective_contracts
+        assert scenario.final_expect.is_empty
+        assert scenario.cards_for_engine("character_prompt") == scenario.cards
+        for card in scenario.cards:
+            assert card.requires.is_empty and card.expect.is_empty
+            assert card.expect_world_stage is None
+            assert card.retry_text is None
+            assert card.world_time_advance_seconds == 0
+            assert not card.maximum_fact_depths_after
+    worker_text = "\n".join(card.text for card in normal.cards)
+    assert "唐婷" not in worker_text
+    assert "已经等了" not in worker_text
+
+
+@pytest.mark.parametrize(
+    "stage", ["not_contacted", "first_unanswered", "coming", "at_door", "present", None],
+)
+def test_follow_up_selects_known_world_stage_without_interpreting_speech(stage) -> None:
+    card = ProbeCard.model_validate({
+        "card_id": "follow", "text": "你那边怎么样了？",
+        "world_stage_texts": {
+            "not_contacted": "还没发的话，你想先说说顾虑吗？",
+            "first_unanswered": "等回复时想再和她说点什么吗？",
+            "coming": "她过来这会儿，你想聊点什么？",
+            "at_door": "先确认门外是不是你朋友。",
+            "present": "现在有人陪着，你想怎么安排？",
+        },
+    })
+    selected = card.text_for_engine("character_prompt", world_stage=stage)
+    assert selected == card.world_stage_texts.get(stage, card.text)
+    assert card.text_for_engine("workflow", world_stage=stage) == card.text
+
+
+def test_contact_follow_up_does_not_announce_unheard_external_results() -> None:
+    catalog = load_scenarios(
+        Path(__file__).parent / "fixtures/character_continuous_scenarios.json"
+    )
+    for card in catalog["mingzao_continuous"].cards:
+        assert set(card.world_stage_texts) <= {"not_contacted", "first_unanswered"}
 
 
 def test_marriage_catalog_has_two_scene_specific_fixed_suites() -> None:

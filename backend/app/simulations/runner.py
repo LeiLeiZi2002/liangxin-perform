@@ -24,7 +24,7 @@ from app.cases.loader import CaseRepository
 from app.runtime.character_provider import CharacterNotFoundError, CharacterRepository
 from app.runtime.failures import safe_failure_details
 from app.runtime.models import ModelCallMetricRecord, RuntimeFailureRecord
-from app.sessions.models import Scene, SessionRecord, TurnRecord
+from app.sessions.models import Scene, SessionMode, SessionRecord, TurnRecord
 from app.simulations.checks import (
     CapturedTurn,
     CheckResult,
@@ -59,6 +59,7 @@ class EnvironmentStatus(RunnerModel):
 class DatabaseSnapshot(RunnerModel):
     status: str
     end_reason: str | None
+    mode: SessionMode = SessionMode.experience
     scene: Scene = Scene.hotline
     engine: RuntimeEngine = "workflow"
     world_stage: WorldStage | None = None
@@ -172,6 +173,8 @@ class ScenarioRunResult(RunnerModel):
     checks: list[CheckResult]
     final_issues: list[str]
     exhausted_while_active: bool = False
+    cleanup_requested: bool = False
+    protocol_end_reason: str | None = None
     final_snapshot: DatabaseSnapshot
     transcript: list[CapturedTurn] = Field(default_factory=list)
     state_frames: list[StateFrame] = Field(default_factory=list)
@@ -276,6 +279,7 @@ class LiveSimulationProtocol:
         self.snapshot: dict[str, object] | None = None
         self.ws_transcript: list[CapturedTurn] = []
         self.total_binary_chunks = 0
+        self.ended_reason: str | None = None
 
     async def connect(self) -> dict[str, object]:
         first = await self._open_socket()
@@ -482,6 +486,7 @@ class LiveSimulationProtocol:
             if message_type in {"session.error", "input.error"}:
                 raise SimulationProtocolError(str(message.get("message", "会话协议错误")))
             if message_type == "session.ended":
+                self.ended_reason = _optional_text(message.get("reason"))
                 raise SimulationProtocolError("会话在当前探针提交前已经结束")
             if message_type != "turn.committed":
                 continue
@@ -531,7 +536,10 @@ class LiveSimulationProtocol:
         incoming = await self._receive()
         if isinstance(incoming, bytes):
             raise SimulationProtocolError("等待 JSON 时收到意外音频")
-        return _decode_message(incoming)
+        message = _decode_message(incoming)
+        if message.get("type") == "session.ended":
+            self.ended_reason = _optional_text(message.get("reason"))
+        return message
 
     async def _receive(self) -> str | bytes:
         if self.socket is None:
@@ -698,6 +706,7 @@ def read_database_evidence(engine: Engine, session_id: str) -> DatabaseEvidence:
             status=_enum_value(record.status),
             end_reason=_enum_value(record.end_reason) if record.end_reason else None,
             scene=record.scene,
+            mode=record.mode,
             engine=runtime_engine,
             world_stage=_world_stage(world.get("stage")),
             conversation_stage=str(actor_state.get("stage", "opening")),
@@ -777,6 +786,7 @@ class SimulationRunner:
         observer: DatabaseObserver = read_database_evidence,
         case_id: str = "crisis_student_main",
         scene: Scene = Scene.hotline,
+        mode: SessionMode = SessionMode.experience,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.output_root = output_root or _project_root() / "data" / "simulations"
@@ -785,6 +795,7 @@ class SimulationRunner:
         self.observer = observer
         self.case_id = case_id
         self.scene = scene
+        self.mode = mode
         self.package = CaseRepository().get(case_id)
         if scene not in self.package.case.supported_scenes:
             raise ValueError(f"案例 {case_id} 不支持场域 {scene.value}")
@@ -814,6 +825,7 @@ class SimulationRunner:
         cards: list[CardRunResult] = []
         frames: list[StateFrame] = []
         exhausted = False
+        cleanup_requested = False
         final_evidence: DatabaseEvidence | None = None
         current: DatabaseEvidence | None = None
         run_cards = scenario.cards
@@ -852,6 +864,7 @@ class SimulationRunner:
                 card_text = card.text_for_engine(
                     current.snapshot.engine,
                     scene=self.scene,
+                    world_stage=current.snapshot.world_stage,
                 )
                 assert card_text is not None
                 try:
@@ -969,6 +982,7 @@ class SimulationRunner:
             if current.snapshot.status == "active":
                 exhausted = not scenario.end_after_cards
                 operation = "end_session"
+                cleanup_requested = True
                 await protocol.end_session()
                 final_evidence = self.observer(self.engine, session_id)
                 if not character_prompt:
@@ -1223,6 +1237,8 @@ class SimulationRunner:
             checks=checks,
             final_issues=final_issues,
             exhausted_while_active=exhausted,
+            cleanup_requested=cleanup_requested,
+            protocol_end_reason=getattr(protocol, "ended_reason", None),
             final_snapshot=final_evidence.snapshot,
             transcript=final_evidence.transcript,
             state_frames=frames,
@@ -1341,6 +1357,8 @@ class SimulationRunner:
             cards=cards,
             checks=checks or [],
             final_issues=[f"运行中断：{detail}", *observation_issues],
+            cleanup_requested=True,
+            protocol_end_reason=getattr(protocol, "ended_reason", None),
             final_snapshot=evidence.snapshot,
             transcript=evidence.transcript,
             state_frames=frames,
@@ -1406,7 +1424,7 @@ class SimulationRunner:
         response = await client.post(
             "/api/sessions",
             json={
-                "mode": "experience",
+                "mode": self.mode.value,
                 "scene": self.scene.value,
                 "case_type": self.package.case.case_type.value,
                 "case_id": self.case_id,
@@ -1749,6 +1767,9 @@ def _summary_markdown(results: Sequence[ScenarioRunResult]) -> str:
                 f"- 会话：`{result.session_id}`",
                 f"- 案例：`{result.case_id}`",
                 f"- 场域：`{result.scene.value}`",
+                f"- 会话模式：`{result.final_snapshot.mode.value}`",
+                f"- 测试清理请求：{'已发送' if result.cleanup_requested else '未发送'}",
+                f"- 通话协议结束原因：{result.protocol_end_reason or '未记录'}",
                 "- 最终状态 "
                 f"{result.final_snapshot.status}；"
                 f"案例阶段 {result.final_snapshot.conversation_stage}；"
@@ -2093,6 +2114,7 @@ def _project_root() -> Path:
 async def _run_from_cli(args: argparse.Namespace) -> int:
     case_id = str(getattr(args, "case_id", "crisis_student_main"))
     scene = Scene(str(getattr(args, "scene", Scene.hotline.value)))
+    mode = SessionMode(str(getattr(args, "mode", SessionMode.experience.value)))
     catalog = getattr(args, "catalog", None)
     scenarios = load_scenarios(catalog)
     selected = select_scenarios(
@@ -2128,6 +2150,7 @@ async def _run_from_cli(args: argparse.Namespace) -> int:
             output_root=args.output_root,
             case_id=case_id,
             scene=scene,
+            mode=mode,
         )
         results = await _run_selected_scenarios(runner, selected, api)
         result_dir = runner.write_results(results)
@@ -2249,6 +2272,12 @@ def main() -> int:
         help="固定脚本目录 JSON；不传时使用项目内置目录",
     )
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
+    parser.add_argument(
+        "--mode",
+        choices=[mode.value for mode in SessionMode],
+        default=SessionMode.experience.value,
+        help="沿用正式测评或自由体验的会话模式",
+    )
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--check-only", action="store_true")
     args = parser.parse_args()

@@ -236,6 +236,7 @@ def _global_json(
             "bottom_line_candidates": [],
             "material_conflict_candidates": [],
             "urgent_risk_disclosure_candidates": [],
+            "opportunity_observations": [],
         },
         ensure_ascii=False,
     )
@@ -526,6 +527,8 @@ async def test_reduce_reads_only_validated_local_outputs_targets_and_rubrics() -
         "active_target_briefs": [
             item.model_dump(mode="json") for item in active_target_briefs
         ],
+        "conditional_opportunities": [],
+        "action_observations": [],
         "turn_speakers": {"turn-worker": "worker"},
         "local_outputs": [output.model_dump(mode="json") for output in local_outputs],
         "scene": "hotline",
@@ -538,7 +541,7 @@ async def test_reduce_reads_only_validated_local_outputs_targets_and_rubrics() -
         "session_state",
         "actor_state",
         "case_package",
-        "opportunities",
+        '"opportunities"',
         "used_fact_ids",
     ):
         assert forbidden not in serialized_messages
@@ -1251,12 +1254,15 @@ def test_prompt_bundle_covers_actual_schemas_and_evidence_role_boundaries() -> N
         "passthrough",
         "不能因‘待聚焦编码’直接当作证据",
         "同一意义单元可以映射到多个 target",
-        "不得自行判断专项模块是否启用",
+        "conditional_opportunities",
+        "opportunity_observations",
+        "action_observations",
         "coverage_decisions",
         "planned_actions 表示会谈中讨论或拟采取的安排",
     ):
         assert required in reduce_prompt
     assert "紧迫风险候选只能引用 source_role=client" not in reduce_prompt
+    assert "不得自行判断专项模块是否启用" not in reduce_prompt
     for family in ("report_interaction", "report_professional", "report_safety"):
         prompt = prompts[family]
         assert "primary" in prompt
@@ -1299,3 +1305,383 @@ def test_report_provider_uses_longer_timeout_without_changing_dialogue_timeout(
     DirectorProvider(store)._get_client(store.credentials())
 
     assert captured_timeouts == [300.0, 30.0]
+
+
+def _opportunity_contract():
+    from app.reports import report_provider
+
+    for name in (
+        "ConditionalOpportunityBrief",
+        "PublicActionObservation",
+        "OpportunityObservationStatus",
+        "OpportunityObservation",
+        "validate_opportunity_observations",
+    ):
+        assert hasattr(report_provider, name), f"缺少条件机会契约：{name}"
+    return report_provider
+
+
+def _opportunity_context():
+    contract = _opportunity_contract()
+    conditions = [
+        contract.ConditionalOpportunityBrief(
+            opportunity_id="current-risk",
+            target=SpecialModule.safety_response,
+            description="来访者公开说明当前风险与时间紧迫性。",
+        )
+    ]
+    actions = [
+        contract.PublicActionObservation(
+            turn_id="turn-action",
+            action_request="contact_support",
+            world_stage_before="ongoing",
+            world_stage_after="support_unavailable",
+        )
+    ]
+    refs = [
+        contract.DialogueRef(
+            kind="dialogue", turn_id="turn-client", quote="我已经站在边上，现在就想跳下去。"
+        ),
+        contract.DialogueRef(
+            kind="dialogue", turn_id="turn-worker", quote="你现在有没有想过伤害自己？"
+        ),
+    ]
+    speakers = {
+        "turn-client": "client",
+        "turn-worker": "worker",
+        "turn-action": "client",
+    }
+    return contract, conditions, actions, refs, speakers
+
+
+def _opportunity_payload() -> dict[str, object]:
+    return {
+        "opportunity_id": "current-risk",
+        "status": "present",
+        "reason": "来访者直接说出当前的危险位置与立即行动意图。",
+        "refs": [
+            {"kind": "dialogue", "turn_id": "turn-client", "quote": "现在就想跳下去"}
+        ],
+        "action_turn_ids": [],
+    }
+
+
+def test_reduce_schema_requires_opportunity_observations_but_old_cache_is_readable() -> None:
+    from app.reports.report_provider import GlobalCodingOutput, ReduceModelOutput
+
+    schema = ReduceModelOutput.model_json_schema()
+    assert "opportunity_observations" in schema["required"]
+    payload = json.loads(_global_json())
+    payload.pop("opportunity_observations")
+    with pytest.raises(ValidationError, match="opportunity_observations"):
+        ReduceModelOutput.model_validate(payload)
+    payload.pop("coverage_decisions")
+    assert GlobalCodingOutput.model_validate(payload).opportunity_observations == []
+
+
+@pytest.mark.parametrize(
+    "missing", ["opportunity_id", "status", "reason", "refs", "action_turn_ids"]
+)
+def test_opportunity_observation_requires_each_output_field(missing: str) -> None:
+    contract = _opportunity_contract()
+    payload = _opportunity_payload()
+    payload.pop(missing)
+    with pytest.raises(ValidationError, match=missing):
+        contract.OpportunityObservation.model_validate(payload)
+
+
+@pytest.mark.parametrize("reason", ["", " \n\t"])
+def test_opportunity_observation_rejects_blank_reason(reason: str) -> None:
+    contract = _opportunity_contract()
+    payload = _opportunity_payload() | {"reason": reason}
+    with pytest.raises(ValidationError, match="reason"):
+        contract.OpportunityObservation.model_validate(payload)
+
+
+def test_reduce_conversion_preserves_complete_opportunity_evidence() -> None:
+    contract = _opportunity_contract()
+    observation = _opportunity_payload() | {"action_turn_ids": ["turn-action"]}
+    payload = json.loads(_global_json()) | {"opportunity_observations": [observation]}
+    output = contract.ReduceModelOutput.model_validate(payload).to_global_output()
+    assert output.model_dump(mode="json")["opportunity_observations"] == [observation]
+
+
+@pytest.mark.parametrize("status", ["present", "absent", "uncertain"])
+def test_opportunity_validator_accepts_explicit_states_with_authentic_evidence(
+    status: str,
+) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    payload = _opportunity_payload() | {"status": status}
+    if status != "present":
+        payload["refs"] = []
+    contract.validate_opportunity_observations(
+        [contract.OpportunityObservation.model_validate(payload)],
+        conditions,
+        source_refs=refs,
+        turn_speakers=speakers,
+        action_observations=actions,
+    )
+
+
+@pytest.mark.parametrize(
+    ("change", "error_pattern"),
+    [
+        ({"opportunity_id": "unknown-condition"}, "opportunity_observations.*unknown-condition"),
+        ({"refs": []}, "present.*client"),
+        (
+            {"refs": [{"kind": "dialogue", "turn_id": "turn-worker", "quote": "伤害自己"}]},
+            "present.*client",
+        ),
+        (
+            {"refs": [{"kind": "dialogue", "turn_id": "turn-client", "quote": "想跳楼"}]},
+            "连续子串",
+        ),
+        (
+            {"refs": [{"kind": "dialogue", "turn_id": "turn-client", "quote": "伤害自己"}]},
+            "连续子串",
+        ),
+        (
+            {"refs": [{"kind": "dialogue", "turn_id": "missing-turn", "quote": "现在"}]},
+            "说话人",
+        ),
+        ({"action_turn_ids": ["invented-action"]}, "action_turn_ids.*invented-action"),
+        ({"action_turn_ids": ["turn-action", "turn-action"]}, "action_turn_ids.*重复"),
+    ],
+)
+def test_opportunity_validator_rejects_untrusted_sources_and_identity(
+    change: dict[str, object], error_pattern: str
+) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    observation = contract.OpportunityObservation.model_validate(_opportunity_payload() | change)
+    with pytest.raises(ValueError, match=error_pattern):
+        contract.validate_opportunity_observations(
+            [observation], conditions,
+            source_refs=refs, turn_speakers=speakers, action_observations=actions,
+        )
+
+
+@pytest.mark.parametrize("count", [0, 2])
+def test_opportunity_validator_rejects_missing_or_duplicate_observations(count: int) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    observation = contract.OpportunityObservation.model_validate(_opportunity_payload())
+    with pytest.raises(ValueError, match="opportunity_observations"):
+        contract.validate_opportunity_observations(
+            [observation] * count, conditions,
+            source_refs=refs, turn_speakers=speakers, action_observations=actions,
+        )
+
+
+@pytest.mark.parametrize("status", ["absent", "uncertain"])
+def test_opportunity_validator_checks_evidence_for_nonpresent_states(status: str) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    observation = contract.OpportunityObservation.model_validate(
+        _opportunity_payload() | {"status": status}
+    )
+    with pytest.raises(ValueError, match="连续子串"):
+        contract.validate_opportunity_observations(
+            [observation], conditions,
+            source_refs=[], turn_speakers=speakers, action_observations=actions,
+        )
+
+
+def test_opportunity_validator_rejects_ref_without_known_speaker_even_if_quote_exists() -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    observation = contract.OpportunityObservation.model_validate(_opportunity_payload())
+    speakers.pop("turn-client")
+    with pytest.raises(ValueError, match="说话人"):
+        contract.validate_opportunity_observations(
+            [observation], conditions,
+            source_refs=refs, turn_speakers=speakers, action_observations=actions,
+        )
+
+
+@pytest.mark.parametrize("path", ["initial", "cache_rejected", "repair"])
+async def test_reduce_sends_public_conditions_and_actions_on_every_request_path(path: str) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    payload = json.loads(_global_json()) | {
+        "opportunity_observations": [_opportunity_payload() | {"action_turn_ids": ["turn-action"]}],
+        "coverage_decisions": [{
+            "target": "S2",
+            "status": "no_reliable_material",
+            "reason": "来访者已经公开风险，但材料不足以判断受测者的处置行为。",
+        }],
+    }
+    outcome = json.dumps(payload, ensure_ascii=False)
+    client = FakeClient([CacheRejectedError("cache not supported"), outcome]
+                        if path == "cache_rejected" else [outcome])
+    provider = contract.ReportProvider(_store(), client=client)
+    local_outputs = [
+        contract.LocalCodingOutput(shard_id="shard-a", units=[contract.LocalCodedUnit(
+            id="client-unit", summary="来访者公开风险情境。", initial_codes=["当前风险"],
+            refs=refs, source_role="interaction", alternative_reading=None,
+        )]),
+        contract.LocalCodingOutput(shard_id="shard-b", units=[]),
+    ]
+    result = await provider.reduce_coding(
+        local_outputs, session_id="session-report", model_config=_model_config(),
+        targets=ALL_TARGETS, turn_speakers=speakers, scene=Scene.hotline, media=Media.voice,
+        conditional_opportunities=conditions, action_observations=actions,
+        call_kind=ModelCallKind.repair if path == "repair" else ModelCallKind.initial,
+        validation_feedback="补齐机会判断。" if path == "repair" else None,
+    )
+    assert result.model_dump(mode="json")["opportunity_observations"] == payload[
+        "opportunity_observations"
+    ]
+    assert len(client.chat.completions.calls) == (2 if path == "cache_rejected" else 1)
+    for call in client.chat.completions.calls:
+        dynamic = json.loads(call["messages"][2]["content"])
+        assert dynamic["conditional_opportunities"] == [item.model_dump(mode="json")
+                                                        for item in conditions]
+        assert dynamic["action_observations"] == [item.model_dump(mode="json") for item in actions]
+        assert dynamic["active_target_briefs"] == []
+        assert "session_state" not in json.dumps(call["messages"], ensure_ascii=False)
+
+
+async def test_reduce_validates_opportunity_refs_before_returning_global_output() -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    payload = json.loads(_global_json()) | {"opportunity_observations": [_opportunity_payload()]}
+    client = FakeClient([json.dumps(payload, ensure_ascii=False)])
+    provider = contract.ReportProvider(_store(), client=client)
+    with pytest.raises(ValueError, match="连续子串"):
+        await provider.reduce_coding(
+            [contract.LocalCodingOutput(shard_id="shard-a", units=[]),
+             contract.LocalCodingOutput(shard_id="shard-b", units=[])],
+            session_id="session-report", model_config=_model_config(), targets=ALL_TARGETS,
+            turn_speakers=speakers, scene=Scene.hotline, media=Media.voice,
+            conditional_opportunities=conditions, action_observations=actions,
+        )
+    assert len(client.chat.completions.calls) == 1
+
+
+def test_reduce_prompt_separates_conditions_from_ability_and_actual_actions() -> None:
+    from app.reports.report_provider import REPORT_PROMPT_BUNDLE
+
+    prompt = REPORT_PROMPT_BUNDLE["prompts"]["report_reduce"]
+    for required in (
+        "present", "absent", "uncertain", "必须且只能", "候选", "不代表启用",
+        "没有回应", "不等于", "工作记录", "提问", "来访者", "action_observations",
+        "至少一条", "client", "连续子串",
+        "本次判为 present 的条件目标",
+        "程序确认的行动", "来访者自述已经联系", "不得作为工作者已实施行动的证据",
+    ):
+        assert required in prompt
+
+
+@pytest.mark.parametrize(
+    ("invalid_input", "error_pattern"),
+    [
+        ("duplicate_condition", "conditional_opportunities.*重复"),
+        ("unknown_target", "conditional_opportunities.*target"),
+        ("duplicate_action", "action_observations.*重复"),
+        ("worker_action", "action_observations.*client"),
+        ("unknown_action_turn", "action_observations.*client"),
+    ],
+)
+async def test_reduce_rejects_invalid_condition_or_action_inputs_before_model_call(
+    invalid_input: str, error_pattern: str
+) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    targets = ALL_TARGETS
+    if invalid_input == "duplicate_condition":
+        conditions *= 2
+    elif invalid_input == "unknown_target":
+        targets = tuple(CoreDimension)
+    elif invalid_input == "duplicate_action":
+        actions *= 2
+    elif invalid_input == "worker_action":
+        speakers["turn-action"] = "worker"
+    else:
+        speakers.pop("turn-action")
+    payload = json.loads(_global_json(counter_targets=targets)) | {
+        "opportunity_observations": [
+            _opportunity_payload() | {"status": "uncertain", "refs": []}
+        ]
+    }
+    client = FakeClient([json.dumps(payload, ensure_ascii=False)])
+    provider = contract.ReportProvider(_store(), client=client)
+    with pytest.raises(ValueError, match=error_pattern):
+        await provider.reduce_coding(
+            [contract.LocalCodingOutput(shard_id="shard-a", units=[]),
+             contract.LocalCodingOutput(shard_id="shard-b", units=[])],
+            session_id="session-report", model_config=_model_config(), targets=targets,
+            turn_speakers=speakers, scene=Scene.hotline, media=Media.voice,
+            conditional_opportunities=conditions, action_observations=actions,
+        )
+    assert client.chat.completions.calls == []
+
+
+@pytest.mark.parametrize(
+    ("coverage", "error_pattern"),
+    [
+        (None, "coverage_decisions.*缺少 S2"),
+        ("evidence_mapped", "S2.*evidence_mapped.*没有对应证据"),
+    ],
+)
+async def test_reduce_requires_coverage_for_newly_present_targets_and_repairs(
+    coverage: str | None, error_pattern: str
+) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    invalid = json.loads(_global_json()) | {
+        "opportunity_observations": [_opportunity_payload()]
+    }
+    if coverage is not None:
+        invalid["coverage_decisions"] = [{
+            "target": "S2", "status": coverage, "reason": "声明已经完成处置行为编码。",
+        }]
+    repaired = invalid | {
+        "coverage_decisions": [{
+            "target": "S2",
+            "status": "no_reliable_material",
+            "reason": "风险情境已经出现，但材料没有可可靠编码的受测者处置行为。",
+        }]
+    }
+    client = FakeClient([
+        json.dumps(invalid, ensure_ascii=False),
+        json.dumps(repaired, ensure_ascii=False),
+    ])
+    provider = contract.ReportProvider(_store(), client=client)
+    local_outputs = [
+        contract.LocalCodingOutput(shard_id="shard-a", units=[contract.LocalCodedUnit(
+            id="client-risk", summary="来访者公开当前风险。", initial_codes=["当前风险"],
+            refs=refs, source_role="interaction", alternative_reading=None,
+        )]),
+        contract.LocalCodingOutput(shard_id="shard-b", units=[]),
+    ]
+    with pytest.raises(ValueError, match=error_pattern) as error:
+        await provider.reduce_coding(
+            local_outputs, session_id="session-report", model_config=_model_config(),
+            targets=ALL_TARGETS, turn_speakers=speakers, scene=Scene.hotline, media=Media.voice,
+            conditional_opportunities=conditions, action_observations=actions,
+        )
+    result = await provider.reduce_coding(
+        local_outputs, session_id="session-report", model_config=_model_config(),
+        targets=ALL_TARGETS, turn_speakers=speakers, scene=Scene.hotline, media=Media.voice,
+        conditional_opportunities=conditions, action_observations=actions,
+        call_kind=ModelCallKind.repair, validation_feedback=str(error.value),
+    )
+    assert (
+        result.opportunity_observations[0].status is contract.OpportunityObservationStatus.present
+    )
+    assert result.coded_evidence == []
+    assert len(client.chat.completions.calls) == 2
+    assert str(error.value) in client.chat.completions.calls[1]["messages"][-1]["content"]
+
+
+@pytest.mark.parametrize("status", ["absent", "uncertain"])
+async def test_reduce_does_not_require_coverage_for_nonpresent_conditional_targets(
+    status: str,
+) -> None:
+    contract, conditions, actions, refs, speakers = _opportunity_context()
+    payload = json.loads(_global_json()) | {
+        "opportunity_observations": [_opportunity_payload() | {"status": status, "refs": []}]
+    }
+    client = FakeClient([json.dumps(payload, ensure_ascii=False)])
+    result = await contract.ReportProvider(_store(), client=client).reduce_coding(
+        [contract.LocalCodingOutput(shard_id="shard-a", units=[]),
+         contract.LocalCodingOutput(shard_id="shard-b", units=[])],
+        session_id="session-report", model_config=_model_config(), targets=ALL_TARGETS,
+        turn_speakers=speakers, scene=Scene.hotline, media=Media.voice,
+        conditional_opportunities=conditions, action_observations=actions,
+    )
+    assert result.opportunity_observations[0].status.value == status
+    assert result.coded_evidence == []

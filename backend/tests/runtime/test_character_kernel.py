@@ -1431,7 +1431,9 @@ async def test_support_world_progresses_in_order_and_is_injected_into_actor(
     assert len(character.calls) == 4
     assert character.calls[0]["world_reality"] == "热线接通后还没有联系唐婷。"
     assert character.calls[1]["world_reality"] == "第一次联系唐婷没有接通。"
-    assert character.calls[2]["world_reality"] == "唐婷已经到门外，尚未进屋。"
+    assert str(character.calls[2]["world_reality"]).startswith(
+        "【本轮新情况】\n唐婷已经到门外，尚未进屋。"
+    )
     assert tuple(character.calls[0]["allowed_world_actions"]) == (
         SupportWorldAction.none,
         SupportWorldAction.send_first_support_message,
@@ -1563,3 +1565,89 @@ async def test_opening_rejects_world_action_and_keeps_initial_world(
     assert record is not None
     assert load_support_world(record.state_json).stage.value == "not_contacted"
     assert turns == []
+
+
+@pytest.mark.asyncio
+async def test_new_world_information_is_offered_once_after_kernel_reload(
+    test_engine: Engine, tmp_path: Path,
+) -> None:
+    from app.runtime.character_kernel import CharacterPromptKernel
+
+    character = FakeCharacter(action_requests=(
+        "send_first_support_message", "send_urgent_support_message", "none", "none",
+    ))
+    kernel = _kernel(test_engine, tmp_path, character, FakeSpeech())
+    for index in range(2):
+        await kernel.process_worker_turn(
+            session_id="character-session", client_turn_id=f"news-{index}",
+            text="你可以按自己的话联系她。", synthesize_audio=False,
+        )
+    restored = CharacterPromptKernel(
+        engine=test_engine, characters=FakeCharacterRepository(), character=character,
+        speech=None, audio_root=tmp_path,
+    )
+    for index in range(2, 4):
+        await restored.process_worker_turn(
+            session_id="character-session", client_turn_id=f"news-{index}",
+            text="你那边怎么样了？", synthesize_audio=False,
+        )
+    first_reply = str(character.calls[2]["world_reality"])
+    repeated_state = str(character.calls[3]["world_reality"])
+    assert "本轮新情况" in first_reply
+    assert "唐婷已经答应赶来" in first_reply
+    assert "对方" in first_reply
+    assert "本轮新情况" not in repeated_state
+    assert "唐婷已经答应赶来" in repeated_state
+    assert len(character.calls) == 4
+
+
+@pytest.mark.asyncio
+async def test_arrival_during_audio_retry_remains_new_for_the_next_reply(
+    test_engine: Engine, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import timedelta
+
+    from app.runtime import character_kernel as module
+
+    character = FakeCharacter()
+    speech = RecoveringSpeech()
+    kernel = _kernel(test_engine, tmp_path, character, speech)
+    clock = module.utc_now()
+    monkeypatch.setattr(module, "utc_now", lambda: clock)
+    with Session(test_engine) as db:
+        record = db.get(SessionRecord, "character-session")
+        assert record is not None
+        record.state_json = {**record.state_json, "world": {
+            "kind": "support_arrival", "stage": "coming",
+            "arrival_due_at": (clock + timedelta(seconds=60)).isoformat(),
+        }}
+        db.add(record)
+        db.commit()
+
+    with pytest.raises(TechnicalPauseError):
+        await kernel.process_worker_turn(
+            session_id="character-session", client_turn_id="arrival-retry",
+            text="我陪你等一会儿。",
+        )
+    clock += timedelta(seconds=61)
+    speech.fail = False
+    kernel.resume_listening("character-session")
+    await kernel.process_worker_turn(
+        session_id="character-session", client_turn_id="arrival-retry",
+        text="我陪你等一会儿。",
+    )
+    assert len(character.calls) == 1
+    with Session(test_engine) as db:
+        client = db.exec(select(TurnRecord).where(
+            TurnRecord.client_turn_id == "arrival-retry",
+            TurnRecord.speaker == TurnSpeaker.client,
+        )).one()
+        assert client.signals_json["world_stage_before"] == "coming"
+        assert client.signals_json["world_stage_after"] == "at_door"
+
+    await kernel.process_worker_turn(
+        session_id="character-session", client_turn_id="arrival-next",
+        text="你那边怎么样了？", synthesize_audio=False,
+    )
+    assert "本轮新情况" in str(character.calls[-1]["world_reality"])
+    assert "唐婷已经到门外" in str(character.calls[-1]["world_reality"])
